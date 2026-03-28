@@ -392,8 +392,8 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
         <div class="detail-stats" id="detailStats"></div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-accent btn-sm" onclick="goUpload()">📷 アップロード</button>
-        <button class="btn btn-primary btn-sm" id="idpBtn" onclick="openIDP(currentPlayer)">📋 IDP</button>
+        <button class="btn btn-accent btn-sm" id="uploadBtn">📷 アップロード</button>
+        <button class="btn btn-primary btn-sm" id="idpBtn">📋 IDP</button>
       </div>
     </div>
     <div class="filter-bar">
@@ -715,11 +715,10 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
 
 <div class="toast" id="toast"></div>
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script>
 // ==================== STATE ====================
 const STAFF_PW = 'Jugario@2020';
 let db = null, storage = null, fbApp = null;
@@ -755,9 +754,9 @@ const FIREBASE_CONFIG = {
 function initFirebase() {
   try {
     if (fbApp) return true;
-    fbApp = initializeApp(FIREBASE_CONFIG);
-    db = getFirestore(fbApp);
-    storage = getStorage(fbApp);
+    fbApp = firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    storage = firebase.storage();
     return true;
   } catch(e) { console.error(e); return false; }
 }
@@ -769,7 +768,7 @@ window.saveFirebaseConfig = function() {
 window.testFirebase = async function() {
   if (!initFirebase()) { showStatus('err', '設定が不完全です'); return; }
   try {
-    await getDocs(collection(db, 'settings'));
+    await db.collection("settings").get();
     showStatus('ok', '接続成功！✅');
     showToast('Firebase接続成功！✅');
   } catch(e) { showStatus('err', '接続失敗: ' + e.message); showToast('接続失敗 ❌', true); }
@@ -816,8 +815,8 @@ async function loadAll() {
 
 async function loadPlayers() {
   try {
-    const snap = await getDoc(doc(db, 'settings', 'players'));
-    if (snap.exists() && snap.data().list) {
+    const snap = await db.collection('settings').doc('players').get();
+    if (snap.exists && snap.data().list) {
       players = snap.data().list;
     } else { setDefaultPlayers(); }
   } catch(e) { setDefaultPlayers(); }
@@ -843,15 +842,15 @@ function setDefaultPlayers() {
 
 async function loadPins() {
   try {
-    const snap = await getDoc(doc(db, 'settings', 'pins'));
-    if (snap.exists()) playerPins = snap.data();
+    const snap = await db.collection('settings').doc('pins').get();
+    if (snap.exists) playerPins = snap.data();
   } catch(e) {}
 }
 
 async function loadNotebooks() {
   if (!db) return;
   try {
-    const snap = await getDocs(query(collection(db, 'notebooks'), orderBy('date','desc')));
+    const snap = await db.collection('notebooks').orderBy('date','desc').get();
     notebooks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch(e) { notebooks = []; }
   renderAll();
@@ -1037,9 +1036,19 @@ window.showPlayerDetail = function(name) {
 
   document.getElementById('detailName').innerHTML = `${name} <span style="font-size:0.8rem;font-weight:500;color:var(--gray-mid);">${p?.grade||''}</span>`;
 
-  // IDPボタンに選手名を直接渡す
+  // ボタンにイベントリスナーを直接設定
   const idpBtn = document.getElementById('idpBtn');
-  if (idpBtn) idpBtn.setAttribute('onclick', `openIDP('${name}')`);
+  if (idpBtn) {
+    const newIdpBtn = idpBtn.cloneNode(true);
+    idpBtn.parentNode.replaceChild(newIdpBtn, idpBtn);
+    newIdpBtn.addEventListener('click', () => window.openIDP(name));
+  }
+  const uploadBtn = document.getElementById('uploadBtn');
+  if (uploadBtn) {
+    const newUploadBtn = uploadBtn.cloneNode(true);
+    uploadBtn.parentNode.replaceChild(newUploadBtn, uploadBtn);
+    newUploadBtn.addEventListener('click', () => window.goUpload());
+  }
 
   renderDetail();
 }
@@ -1195,7 +1204,7 @@ window.addComment = async function() {
 
   if (db) {
     try {
-      await updateDoc(doc(db, 'notebooks', currentNote.id), { comments: currentNote.comments });
+      await db.collection('notebooks').doc(currentNote.id).update({ comments: currentNote.comments });
     } catch(e) { console.error(e); }
   }
 
@@ -1311,9 +1320,9 @@ window.submitNote = async function() {
       document.getElementById('upProg').classList.add('show');
       document.getElementById('progFill').style.width = '50%';
       document.getElementById('progText').textContent = '写真をアップロード中...';
-      const imgRef = ref(storage, `notebooks/${player}_${Date.now()}.jpg`);
-      await uploadString(imgRef, selectedImg, 'data_url');
-      imageUrl = await getDownloadURL(imgRef);
+      const imgRef = storage.ref(`notebooks/${player}_${Date.now()}.jpg`);
+      await imgRef.putString(selectedImg, 'data_url');
+      imageUrl = await imgRef.getDownloadURL();
       document.getElementById('progFill').style.width = '100%';
       document.getElementById('progText').textContent = '完了！';
       setTimeout(() => document.getElementById('upProg').classList.remove('show'), 1500);
@@ -1324,7 +1333,7 @@ window.submitNote = async function() {
 
   if (db) {
     try {
-      const docRef = await addDoc(collection(db, 'notebooks'), noteData);
+      const docRef = await db.collection('notebooks').add(noteData);
       notebooks.unshift({ id: docRef.id, ...noteData });
     } catch(e) { notebooks.unshift({ id: Date.now().toString(), ...noteData }); }
   } else {
@@ -1408,7 +1417,7 @@ window.savePins = async function() {
     if (el) { const v = el.value; if (/^\d{4}$/.test(v)) playerPins[p.name] = v; else if (!v) delete playerPins[p.name]; }
   });
   if (db) {
-    try { await setDoc(doc(db, 'settings', 'pins'), playerPins); showToast('PINを保存しました ✅'); }
+    try { await db.collection('settings').doc('pins').set(playerPins); showToast('PINを保存しました ✅'); }
     catch(e) { showToast('保存に失敗しました ❌', true); }
   } else { showToast('PINを保存しました（ローカル）✅'); }
 }
@@ -1418,7 +1427,7 @@ window.addPlayer = async function() {
   const grade = document.getElementById('newGrade').value;
   if (!name) { showToast('⚠️ 選手名を入力してください', true); return; }
   players.push({name, grade});
-  if (db) { try { await setDoc(doc(db, 'settings', 'players'), {list: players}); } catch(e) {} }
+  if (db) { try { await db.collection('settings').doc('players').set({list: players}); } catch(e) {} }
   document.getElementById('newName').value = '';
   populatePlayerSelect(); renderPlayerListSettings(); renderPinList(); renderPlayers(); renderLoginScreen();
   showToast(`${name}を追加しました ✅`);
@@ -1427,7 +1436,7 @@ window.addPlayer = async function() {
 window.removePlayer = async function(i) {
   if (!confirm(`${players[i].name}を削除しますか？`)) return;
   players.splice(i, 1);
-  if (db) { try { await setDoc(doc(db, 'settings', 'players'), {list: players}); } catch(e) {} }
+  if (db) { try { await db.collection('settings').doc('players').set({list: players}); } catch(e) {} }
   populatePlayerSelect(); renderPlayerListSettings(); renderPinList(); renderPlayers(); renderLoginScreen();
 }
 
@@ -1453,8 +1462,8 @@ window.loadIDPData = async function() {
   let d = idpCache[key] || {};
   if (db && !idpCache[key]) {
     try {
-      const snap = await getDoc(doc(db, 'idp', key));
-      if (snap.exists()) d = snap.data();
+      const snap = await db.collection('idp').doc(key).get();
+      if (snap.exists) d = snap.data();
       idpCache[key] = d;
     } catch(e) {}
   }
@@ -1648,7 +1657,7 @@ window.saveIDPData = async function() {
   d.evaluations[currentEvalSession] = { ...scores, player_comment: document.getElementById('eval_player').value, staff_comment: document.getElementById('eval_staff').value, staff_name: document.getElementById('eval_staff_name').value };
   idpCache[key] = d;
   if (db) {
-    try { await setDoc(doc(db, 'idp', key), d); }
+    try { await db.collection('idp').doc(key).set(d); }
     catch(e) { showToast('保存に失敗しました ❌', true); return; }
   }
   document.getElementById('idpSaveStatus').textContent = '✅ 保存しました（' + new Date().toLocaleTimeString('ja-JP') + '）';
@@ -1677,7 +1686,7 @@ window.toggleLike = async function(noteId, commentIdx) {
   else comment.likes.push(name);
 
   if (db) {
-    try { await updateDoc(doc(db, 'notebooks', currentNote.id), { comments: currentNote.comments }); }
+    try { await db.collection('notebooks').doc(currentNote.id).update({ comments: currentNote.comments }); }
     catch(e) { console.error(e); }
   }
   renderComments();
@@ -1689,8 +1698,8 @@ let playerCheckItems = {}; // { playerName: [items] }
 async function loadCheckItems() {
   if (!db) return;
   try {
-    const snap = await getDoc(doc(db, 'settings', 'checkItems'));
-    if (snap.exists()) {
+    const snap = await db.collection('settings').doc('checkItems').get();
+    if (snap.exists) {
       // Support both old format (items:[]) and new format ({playerName:[items]})
       const data = snap.data();
       if (data.playerItems) playerCheckItems = data.playerItems;
@@ -1791,7 +1800,7 @@ window.removeCheckItem = function(i) {
 window.saveCheckItems = async function() {
   if (db) {
     try {
-      await setDoc(doc(db, 'settings', 'checkItems'), { playerItems: playerCheckItems });
+      await db.collection('settings').doc('checkItems').set({ playerItems: playerCheckItems });
       showToast('チェック項目を保存しました ✅');
     } catch(e) { showToast('保存に失敗しました ❌', true); }
   } else { showToast('チェック項目を保存しました ✅'); }
@@ -1823,7 +1832,7 @@ window.submitReply = async function(commentIdx) {
   currentNote.comments[commentIdx].replies.push({ author, text, date: dateStr });
 
   if (db) {
-    try { await updateDoc(doc(db, 'notebooks', currentNote.id), { comments: currentNote.comments }); }
+    try { await db.collection('notebooks').doc(currentNote.id).update({ comments: currentNote.comments }); }
     catch(e) { console.error(e); }
   }
 

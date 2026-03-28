@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>フガーリオ川崎 ノート共有</title>
+<style>
+:root {
+  --green: #1a7a3c;
+  --green-light: #2a9d54;
+  --green-dark: #0f4f26;
+  --accent: #f5c518;
+  --white: #f4f6f3;
+  --gray: #e4e6e0;
+  --gray-mid: #9a9a90;
+  --dark: #1a1a18;
+  --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  --radius: 14px;
+  --font: 'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo',sans-serif;
+  --font-d: 'Impact','Arial Black',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--white);color:var(--dark);min-height:100vh;}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(160deg,#0f4f26,#1a7a3c 60%,#2a9d54);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;}
+#loginScreen *{pointer-events:all;}
+.login-card{background:#fff;border-radius:20px;padding:32px 24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;max-height:90vh;overflow-y:auto;}
+.login-logo{font-family:var(--font-d);font-size:2rem;font-weight:900;color:var(--green-dark);margin-bottom:4px;letter-spacing:0.05em;}
+.login-sub{font-size:0.82rem;color:var(--gray-mid);margin-bottom:24px;}
+.login-player-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;max-height:240px;overflow-y:auto;}
+.login-player-btn{background:var(--white);border:2px solid var(--gray);border-radius:12px;padding:10px 6px;cursor:pointer;transition:all 0.15s;font-family:var(--font);}
+.login-player-btn:hover{border-color:var(--green);background:#e8f5e9;}
+.login-avatar-sm{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;background:linear-gradient(135deg,var(--green-dark),var(--green-light));display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#fff;overflow:hidden;}
+.login-avatar-sm img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.login-pname{font-size:0.7rem;font-weight:700;color:var(--dark);}
+.login-divider{display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--gray-mid);font-size:0.78rem;}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--gray);}
+.pin-display{display:flex;gap:10px;justify-content:center;margin-bottom:14px;}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--gray);background:#fff;transition:all 0.15s;}
+.pin-dot.filled{background:var(--green-dark);border-color:var(--green-dark);}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.pin-key{padding:14px;border:2px solid var(--gray);border-radius:10px;background:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:var(--font);transition:all 0.1s;color:var(--dark);}
+.pin-key:hover{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
+.pin-key:active{transform:scale(0.95);}
+.login-err{color:#e74c3c;font-size:0.8rem;min-height:18px;margin-bottom:8px;}
+.login-back{font-size:0.8rem;color:var(--green);cursor:pointer;text-decoration:underline;display:inline-block;margin-top:8px;}
+.login-sel-name{font-size:0.95rem;font-weight:700;color:var(--green-dark);margin-bottom:12px;}
+
+/* HEADER */
+header{background:var(--green-dark);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.header-inner{max-width:1100px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:56px;}
+.logo{font-family:var(--font-d);font-weight:900;font-size:1.3rem;color:var(--accent);letter-spacing:0.05em;}
+.logo span{color:rgba(255,255,255,0.85);font-size:0.88rem;font-weight:500;font-family:var(--font);margin-left:6px;}
+.nav-tabs{background:var(--green);display:flex;overflow-x:auto;scrollbar-width:none;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{padding:10px 18px;color:rgba(255,255,255,0.7);font-size:0.82rem;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all 0.2s;}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-tab:hover{color:#fff;}
+
+/* MAIN */
+main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
+.view{display:none;}
+.view.active{display:block;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.section-title{font-family:var(--font-d);font-size:1.5rem;font-weight:900;color:var(--green-dark);letter-spacing:0.04em;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;border:none;transition:all 0.15s;font-family:var(--font);}
+.btn-primary{background:var(--green);color:#fff;}
+.btn-primary:hover{background:var(--green-light);transform:translateY(-1px);}
+.btn-accent{background:var(--accent);color:var(--dark);}
+.btn-accent:hover{background:#ffd940;}
+.btn-sm{padding:6px 12px;font-size:0.76rem;}
+.btn-danger{background:#e74c3c;color:#fff;}
+
+/* PLAYER GRID */
+.player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+.player-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 12px;text-align:center;cursor:pointer;transition:all 0.2s;border:2px solid transparent;position:relative;}
+.player-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.11);border-color:var(--green-light);}
+.player-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--green-dark),var(--green-light));color:#fff;font-size:1.4rem;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;overflow:hidden;position:relative;cursor:pointer;}
+.player-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:1rem;color:#fff;}
+.player-avatar:hover .avatar-overlay{display:flex;}
+.player-avatar input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.player-name{font-size:0.88rem;font-weight:700;color:var(--dark);margin-bottom:4px;}
+.grade-tag{display:inline-block;background:var(--green-dark);color:#fff;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:12px;margin-bottom:8px;}
+.note-count{font-size:0.78rem;color:var(--gray-mid);}
+.note-count strong{color:var(--green);font-size:1rem;}
+.unread-badge{position:absolute;top:8px;right:8px;background:var(--accent);color:var(--dark);font-size:0.65rem;font-weight:900;padding:2px 6px;border-radius:10px;}
+
+/* PLAYER DETAIL */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--gray-mid);margin-bottom:14px;flex-wrap:wrap;}
+.breadcrumb-link{color:var(--green);cursor:pointer;font-weight:700;}
+.player-detail-header{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;}
+.player-detail-avatar{width:64px;height:64px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--green-dark),var(--green-light));color:#fff;font-size:1.6rem;font-weight:900;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer;}
+.player-detail-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.player-detail-avatar .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:1rem;color:#fff;}
+.player-detail-avatar:hover .avatar-overlay{display:flex;}
+.player-detail-avatar input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.detail-name{font-size:1.2rem;font-weight:900;color:var(--dark);margin-bottom:4px;}
+.detail-stats{display:flex;gap:14px;flex-wrap:wrap;}
+.detail-stat{font-size:0.78rem;color:var(--gray-mid);}
+.detail-stat strong{color:var(--green-dark);font-size:0.95rem;}
+
+/* TIMELINE */
+.notebook-timeline{display:flex;flex-direction:column;gap:10px;}
+.timeline-item{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:all 0.2s;border:2px solid transparent;display:flex;}
+.timeline-item:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.1);border-color:var(--green-light);}
+.tl-date{background:var(--green-dark);color:#fff;width:68px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;}
+.tl-month{font-size:0.7rem;font-weight:700;opacity:0.8;}
+.tl-day{font-family:var(--font-d);font-size:1.8rem;font-weight:900;line-height:1;}
+.tl-year{font-size:0.62rem;opacity:0.65;}
+.tl-content{flex:1;padding:12px 14px;display:flex;gap:10px;align-items:center;}
+.tl-thumb{width:64px;height:64px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden;}
+.tl-thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.tl-info{flex:1;min-width:0;}
+.tl-title{font-size:0.86rem;font-weight:700;color:var(--dark);margin-bottom:3px;}
+.tl-excerpt{font-size:0.76rem;color:var(--gray-mid);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.tl-foot{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;}
+
+/* ALL GRID */
+.notebook-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.notebook-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:all 0.2s;border:2px solid transparent;}
+.notebook-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.11);border-color:var(--green-light);}
+.card-img{width:100%;height:170px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);display:flex;align-items:center;justify-content:center;font-size:2.5rem;overflow:hidden;}
+.card-img img{width:100%;height:100%;object-fit:cover;}
+.card-body{padding:12px 14px;}
+.card-meta{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
+.player-badge{background:var(--green-dark);color:#fff;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:12px;}
+.grade-badge{background:var(--gray);color:var(--gray-mid);font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:12px;}
+.card-date{font-size:0.82rem;font-weight:700;color:var(--green-dark);margin-bottom:3px;}
+.card-excerpt{font-size:0.76rem;color:var(--gray-mid);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.card-footer{padding:8px 14px;border-top:1px solid var(--gray);display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;color:var(--gray-mid);}
+
+/* UPLOAD */
+.upload-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;max-width:560px;margin:0 auto;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:0.82rem;font-weight:700;color:var(--green-dark);margin-bottom:6px;}
+.form-control{width:100%;padding:10px 14px;border:2px solid var(--gray);border-radius:8px;font-size:0.86rem;font-family:var(--font);outline:none;transition:border-color 0.2s;background:#fff;}
+.form-control:focus{border-color:var(--green);}
+.image-drop{border:3px dashed var(--gray);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--white);position:relative;overflow:hidden;}
+.image-drop:hover,.image-drop.dragover{border-color:var(--green);background:#e8f5e9;}
+.image-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.image-preview{margin-top:10px;border-radius:8px;overflow:hidden;display:none;}
+.image-preview img{width:100%;max-height:200px;object-fit:contain;}
+.image-preview.show{display:block;}
+.upload-progress{display:none;margin-top:10px;}
+.upload-progress.show{display:block;}
+.progress-bar{height:5px;background:var(--gray);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width 0.3s;width:0%;}
+.progress-text{font-size:0.75rem;color:var(--gray-mid);margin-top:4px;text-align:center;}
+
+/* DASHBOARD */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);text-align:center;border-bottom:4px solid var(--green);}
+.stat-num{font-family:var(--font-d);font-size:2rem;font-weight:900;color:var(--green-dark);line-height:1;}
+.stat-label{font-size:0.74rem;color:var(--gray-mid);font-weight:600;margin-top:4px;}
+.dash-table{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;overflow-x:auto;}
+.dash-table table{width:100%;border-collapse:collapse;min-width:480px;}
+.dash-table th{background:var(--green-dark);color:#fff;padding:10px 14px;text-align:left;font-size:0.78rem;}
+.dash-table td{padding:10px 14px;border-bottom:1px solid var(--gray);font-size:0.82rem;}
+.dash-table tr:last-child td{border-bottom:none;}
+.dash-table tr:hover td{background:#f0f8f2;cursor:pointer;}
+.submit-dot{width:10px;height:10px;border-radius:50%;background:var(--gray);display:inline-block;margin:0 2px;}
+.submit-dot.done{background:var(--green-light);}
+.submit-dot.missing{background:#e74c3c;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;padding:16px;overflow-y:auto;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;padding-top:36px;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:660px;box-shadow:0 20px 60px rgba(0,0,0,0.22);overflow:hidden;animation:slideUp 0.22s ease;}
+@keyframes slideUp{from{transform:translateY(28px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-header{background:var(--green-dark);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-weight:700;font-size:0.95rem;}
+.modal-close{background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;}
+.modal-body{padding:18px;}
+.modal-img-wrap{width:100%;border-radius:10px;margin-bottom:14px;min-height:160px;background:var(--gray);display:flex;align-items:center;justify-content:center;font-size:3rem;overflow:hidden;}
+.modal-img-wrap img{width:100%;max-height:360px;object-fit:contain;border-radius:10px;}
+.modal-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.drive-link{display:inline-flex;align-items:center;gap:5px;font-size:0.8rem;color:var(--green);font-weight:700;text-decoration:none;padding:5px 10px;border:2px solid var(--green);border-radius:7px;margin-bottom:12px;transition:all 0.15s;}
+.drive-link:hover{background:var(--green);color:#fff;}
+
+/* COMMENTS */
+.comments-section{margin-top:14px;}
+.comments-title{font-weight:700;font-size:0.88rem;color:var(--green-dark);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.comment-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.comment-item{background:var(--white);border-radius:9px;padding:9px 12px;border-left:3px solid var(--green-light);}
+.comment-author{font-size:0.75rem;font-weight:700;color:var(--green-dark);margin-bottom:2px;display:flex;align-items:center;gap:6px;}
+.comment-date{font-size:0.7rem;color:var(--gray-mid);font-weight:400;}
+.comment-text{font-size:0.83rem;line-height:1.6;color:var(--dark);}
+.comment-form{display:flex;flex-direction:column;gap:7px;}
+.comment-input{width:100%;padding:9px 12px;border:2px solid var(--gray);border-radius:8px;font-size:0.83rem;font-family:var(--font);resize:vertical;min-height:65px;outline:none;transition:border-color 0.2s;}
+.comment-input:focus{border-color:var(--green);}
+.comment-row{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+.commenter-select{padding:7px 10px;border:2px solid var(--gray);border-radius:7px;font-size:0.8rem;font-family:var(--font);outline:none;background:#fff;}
+/* THREAD */
+.comment-replies{margin-left:18px;margin-top:6px;display:flex;flex-direction:column;gap:6px;}
+.comment-reply{background:#fff;border-radius:8px;padding:7px 10px;border-left:3px solid var(--accent);}
+.reply-author{font-size:0.72rem;font-weight:700;color:#b8860b;margin-bottom:2px;display:flex;align-items:center;gap:6px;}
+.reply-text{font-size:0.81rem;line-height:1.5;color:var(--dark);}
+.reply-form{margin-top:6px;display:none;gap:6px;align-items:flex-start;}
+.reply-form.open{display:flex;}
+.reply-input{flex:1;padding:7px 10px;border:2px solid var(--gray);border-radius:7px;font-size:0.8rem;font-family:var(--font);outline:none;resize:none;min-height:52px;}
+.reply-input:focus{border-color:var(--green);}
+.reply-btn-link{font-size:0.74rem;color:var(--green);cursor:pointer;font-weight:700;background:none;border:none;font-family:var(--font);padding:4px 0;}
+/* CHECKLIST */
+.checklist-wrap{background:var(--white);border-radius:10px;padding:12px 14px;border:2px solid var(--gray);}
+.checklist-section-title{font-size:0.8rem;font-weight:700;color:var(--green-dark);margin-bottom:8px;}
+.check-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--gray);}
+.check-item:last-child{border-bottom:none;}
+.check-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--green-dark);cursor:pointer;flex-shrink:0;}
+.check-item label{font-size:0.84rem;font-weight:600;color:var(--dark);cursor:pointer;flex:1;}
+
+/* SETTINGS */
+.settings-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;max-width:580px;}
+.settings-section{margin-bottom:24px;}
+.settings-section-title{font-weight:700;font-size:0.88rem;color:var(--green-dark);margin-bottom:12px;padding-bottom:7px;border-bottom:2px solid var(--gray);}
+.config-input{width:100%;padding:9px 12px;border:2px solid var(--gray);border-radius:8px;font-size:0.83rem;font-family:var(--font);outline:none;transition:border-color 0.2s;}
+.config-input:focus{border-color:var(--green);}
+.status-row{display:flex;align-items:center;gap:7px;font-size:0.8rem;margin-top:9px;}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--gray);}
+.status-dot.ok{background:var(--green-light);}
+.status-dot.err{background:#e74c3c;}
+.player-list-settings{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
+.player-item{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--white);border-radius:8px;}
+.player-item-name{flex:1;font-size:0.86rem;font-weight:600;}
+.pin-list{display:flex;flex-direction:column;gap:7px;margin-bottom:6px;}
+.pin-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--white);border-radius:8px;}
+.pin-input{width:80px;padding:6px 8px;border:2px solid var(--gray);border-radius:6px;font-size:0.9rem;text-align:center;font-family:var(--font);outline:none;}
+.pin-input:focus{border-color:var(--green);}
+
+/* IDP */
+.idp-tab{padding:10px 14px;font-size:0.8rem;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;color:var(--gray-mid);transition:all 0.2s;}
+.idp-tab.active{color:var(--green-dark);border-bottom-color:var(--green);background:#fff;}
+.idp-panel{display:none;}
+.idp-panel.active{display:block;}
+.idp-section-title{font-family:var(--font-d);font-size:1rem;font-weight:900;color:var(--green-dark);margin-bottom:12px;letter-spacing:0.03em;}
+.idp-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.idp-field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.idp-field label{font-size:0.74rem;font-weight:700;color:var(--gray-mid);letter-spacing:0.04em;}
+.idp-input{padding:9px 12px;border:2px solid var(--gray);border-radius:8px;font-size:0.84rem;font-family:var(--font);outline:none;transition:border-color 0.2s;width:100%;background:#fff;}
+.idp-input:focus{border-color:var(--green);}
+.idp-textarea{width:100%;padding:10px 12px;border:2px solid var(--gray);border-radius:8px;font-size:0.83rem;font-family:var(--font);resize:vertical;min-height:80px;outline:none;transition:border-color 0.2s;}
+.idp-textarea:focus{border-color:var(--green);}
+.idp-table{width:100%;border-collapse:collapse;min-width:420px;}
+.idp-table th{background:var(--green-dark);color:#fff;padding:9px 10px;font-size:0.76rem;text-align:left;}
+.idp-table td{padding:7px 10px;border-bottom:1px solid var(--gray);font-size:0.82rem;}
+.idp-table tr:hover td{background:#f0f8f2;}
+.idp-cell-input{width:76px;padding:5px 7px;border:1.5px solid var(--gray);border-radius:6px;font-size:0.82rem;outline:none;text-align:center;font-family:var(--font);}
+.idp-cell-input:focus{border-color:var(--green);}
+.analysis-header{font-weight:700;font-size:0.86rem;padding:8px 12px;border-radius:8px 8px 0 0;}
+.analysis-header.strong{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);color:var(--green-dark);}
+.analysis-header.challenge{background:linear-gradient(135deg,#fff3e0,#ffe0b2);color:#e65100;}
+.analysis-card{background:var(--white);border-radius:0 0 10px 10px;padding:14px;border:2px solid var(--gray);border-top:none;}
+.eval-btn{padding:7px 14px;border-radius:20px;border:2px solid var(--gray);background:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:var(--font);color:var(--gray-mid);transition:all 0.15s;}
+.eval-btn.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
+.radar-row{display:flex;align-items:center;gap:10px;padding:6px 0;}
+.radar-label{font-size:0.78rem;font-weight:700;flex:1;color:var(--dark);}
+.radar-score{display:flex;gap:4px;}
+.radar-score-btn{width:28px;height:28px;border-radius:50%;border:2px solid var(--gray);background:#fff;font-size:0.74rem;font-weight:700;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
+.radar-score-btn.selected{background:var(--green-dark);border-color:var(--green-dark);color:#fff;}
+
+/* FILTER */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-input{flex:1;min-width:140px;padding:8px 12px;border:2px solid var(--gray);border-radius:8px;font-size:0.83rem;font-family:var(--font);background:#fff;outline:none;transition:border-color 0.2s;}
+.filter-input:focus{border-color:var(--green);}
+.filter-select{padding:8px 12px;border:2px solid var(--gray);border-radius:8px;font-size:0.82rem;font-family:var(--font);background:#fff;outline:none;}
+
+/* SETUP BANNER */
+.setup-banner{background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid var(--accent);border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;display:flex;gap:12px;align-items:flex-start;}
+.setup-banner.hidden{display:none;}
+
+/* MISC */
+.fab{display:none;position:fixed;bottom:20px;right:20px;width:54px;height:54px;background:var(--accent);color:var(--dark);border:none;border-radius:50%;font-size:1.4rem;box-shadow:0 4px 16px rgba(0,0,0,0.22);cursor:pointer;z-index:150;align-items:center;justify-content:center;font-weight:700;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green-dark);color:#fff;padding:11px 20px;border-radius:28px;font-size:0.86rem;font-weight:700;opacity:0;pointer-events:none;transition:all 0.3s;z-index:500;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.error{background:#e74c3c;}
+.loading{text-align:center;padding:44px;color:var(--gray-mid);font-size:0.88rem;}
+.loading-spinner{width:30px;height:30px;border:3px solid var(--gray);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:44px 20px;color:var(--gray-mid);}
+.empty-icon{font-size:2.5rem;margin-bottom:10px;}
+
+@media(max-width:640px){
+  .fab{display:flex;}
+  .player-grid{grid-template-columns:repeat(3,1fr);gap:10px;}
+  .player-card{padding:12px 8px;}
+  .player-avatar{width:44px;height:44px;font-size:1.1rem;}
+  .player-name{font-size:0.76rem;}
+  .notebook-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .card-img{height:140px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .idp-grid-2{grid-template-columns:1fr;}
+}
+@media(max-width:380px){
+  .player-grid{grid-template-columns:repeat(2,1fr);}
+  .notebook-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">⚽ JUGARIO</div>
+    <div class="login-sub">フガーリオ川崎 ノート共有</div>
+    <div id="ls1">
+      <div style="font-size:0.85rem;font-weight:700;color:var(--dark);margin-bottom:12px;">あなたは誰ですか？</div>
+      <div class="login-player-grid" id="loginGrid"></div>
+      <div class="login-divider">スタッフの方はこちら</div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="showStaffLogin()">👨‍🏫 スタッフログイン</button>
+    </div>
+    <div id="ls2" style="display:none;">
+      <div class="login-sel-name" id="loginSelName"></div>
+      <div style="font-size:0.8rem;color:var(--gray-mid);margin-bottom:12px;">4桁のPINを入力してください</div>
+      <div class="pin-display"><div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div><div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div></div>
+      <div class="login-err" id="pinErr"></div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="pinKey('1')">1</button><button class="pin-key" onclick="pinKey('2')">2</button><button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button><button class="pin-key" onclick="pinKey('5')">5</button><button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button><button class="pin-key" onclick="pinKey('8')">8</button><button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key" style="font-size:0.85rem;color:var(--gray-mid);" onclick="pinKey('C')">クリア</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key" style="font-size:0.85rem;color:var(--gray-mid);" onclick="pinKey('D')">⌫</button>
+      </div>
+      <span class="login-back" onclick="backToSelect()">← 選手選択に戻る</span>
+    </div>
+    <div id="ls3" style="display:none;">
+      <div class="login-sel-name">👨‍🏫 スタッフログイン</div>
+      <div class="form-group">
+        <input type="password" class="form-control" id="staffPw" placeholder="スタッフパスワード" onkeydown="if(event.key==='Enter')doStaffLogin()">
+      </div>
+      <div class="login-err" id="staffErr"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="doStaffLogin()">🔓 ログイン</button>
+      <span class="login-back" onclick="backToSelect()">← 選手選択に戻る</span>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">⚽ JUGARIO<span>ノート共有</span></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span id="headerUser" style="font-size:0.78rem;color:rgba(255,255,255,0.85);font-weight:700;"></span>
+      <button onclick="logout()" style="padding:5px 10px;border-radius:7px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:0.74rem;cursor:pointer;font-family:var(--font);">ログアウト</button>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchView('players')">👤 選手一覧</div>
+    <div class="nav-tab staff-only" onclick="switchView('all')" style="display:none;">📋 全ノート</div>
+    <div class="nav-tab" onclick="switchView('upload')">📷 アップロード</div>
+    <div class="nav-tab staff-only" onclick="switchView('dashboard')" style="display:none;">📊 提出管理</div>
+    <div class="nav-tab staff-only" onclick="switchView('settings')" style="display:none;">⚙️ 設定</div>
+  </div>
+</header>
+
+<main>
+
+<!-- PLAYERS VIEW -->
+<div id="view-players" class="view active">
+  <div id="setupBanner" class="setup-banner hidden">
+    <div style="font-size:1.4rem;">⚙️</div>
+    <div><div style="font-weight:700;font-size:0.9rem;color:var(--green-dark);margin-bottom:4px;">初期設定が必要です</div><div style="font-size:0.8rem;color:#555;">「⚙️ 設定」タブからFirebase設定を行ってください。</div></div>
+  </div>
+  <div id="playerListScreen">
+    <div class="section-header">
+      <div class="section-title">選手一覧</div>
+      <button class="btn btn-accent btn-sm" onclick="switchView('upload')">＋ アップロード</button>
+    </div>
+    <div class="filter-bar">
+      <select class="filter-select" id="fGrade" onchange="renderPlayers()">
+        <option value="">全期生</option>
+        <option value="5期生">5期生</option>
+        <option value="6期生">6期生</option>
+        <option value="7期生">7期生</option>
+      </select>
+      <input class="filter-input" type="text" id="fSearch" placeholder="🔍 選手名で検索..." oninput="renderPlayers()">
+    </div>
+    <div class="player-grid" id="playerGrid"></div>
+  </div>
+  <div id="playerDetailScreen" style="display:none;">
+    <div class="breadcrumb">
+      <span class="breadcrumb-link" onclick="showPlayerList()">👤 選手一覧</span>
+      <span>›</span><span id="bcName"></span>
+    </div>
+    <div class="player-detail-header">
+      <div class="player-detail-avatar" id="detailAvatar" onclick="event.stopPropagation()"></div>
+      <div style="flex:1;">
+        <div class="detail-name" id="detailName"></div>
+        <div class="detail-stats" id="detailStats"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-accent btn-sm" onclick="goUpload()">📷 アップロード</button>
+        <button class="btn btn-primary btn-sm" onclick="openIDP(currentPlayer)">📋 IDP</button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <input class="filter-input" type="month" id="fMonth" onchange="renderDetail()" style="flex:0 0 auto;">
+      <input class="filter-input" type="text" id="fNoteSearch" placeholder="🔍 メモで検索..." oninput="renderDetail()">
+    </div>
+    <div class="notebook-timeline" id="playerTimeline"></div>
+  </div>
+</div>
+
+<!-- ALL VIEW -->
+<div id="view-all" class="view">
+  <div class="section-header">
+    <div class="section-title">全ノート</div>
+    <button class="btn btn-primary btn-sm" onclick="loadAll()">🔄 更新</button>
+  </div>
+  <div class="filter-bar">
+    <select class="filter-select" id="fGradeA" onchange="renderAll()">
+      <option value="">全期生</option>
+      <option value="5期生">5期生</option>
+      <option value="6期生">6期生</option>
+      <option value="7期生">7期生</option>
+    </select>
+    <input class="filter-input" type="month" id="fMonthA" onchange="renderAll()">
+    <input class="filter-input" type="text" id="fSearchA" placeholder="🔍 選手名・メモで検索..." oninput="renderAll()" style="flex:1;min-width:120px;">
+  </div>
+  <div class="notebook-grid" id="allGrid"></div>
+</div>
+
+<!-- UPLOAD VIEW -->
+<div id="view-upload" class="view">
+  <div class="section-header"><div class="section-title">ノートをアップロード</div></div>
+  <div class="upload-card">
+    <div class="form-group">
+      <label class="form-label">選手名</label>
+      <select class="form-control" id="upPlayer" onchange="renderUploadChecklist()"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">日付</label>
+      <input type="date" class="form-control" id="upDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">身長（cm）</label>
+      <input type="number" class="form-control" id="upHeight" placeholder="例：165.5" step="0.1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">メモ（任意）</label>
+      <textarea class="form-control" id="upNote" rows="3" placeholder="今日の気づき、頑張ったこと..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">チェック項目</label>
+      <div class="checklist-wrap" id="uploadChecklist">
+        <div style="font-size:0.8rem;color:var(--gray-mid);">設定タブでチェック項目を追加してください</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">写真</label>
+      <div class="image-drop" id="imageDrop">
+        <input type="file" accept="image/*" capture="environment" id="imageInput" onchange="handleImg(event)">
+        <div style="font-size:2rem;margin-bottom:6px;">📷</div>
+        <div style="font-size:0.84rem;color:var(--gray-mid);"><strong style="color:var(--green);">タップして撮影・選択</strong></div>
+      </div>
+      <div class="image-preview" id="imgPreview"><img id="previewImg" src="" alt="preview"></div>
+      <div class="upload-progress" id="upProg"><div class="progress-bar"><div class="progress-fill" id="progFill"></div></div><div class="progress-text" id="progText">アップロード中...</div></div>
+    </div>
+    <button class="btn btn-primary" id="submitBtn" style="width:100%;justify-content:center;padding:13px;" onclick="submitNote()">✅ アップロードする</button>
+  </div>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="view-dashboard" class="view">
+  <div class="section-header">
+    <div class="section-title">提出管理</div>
+    <button class="btn btn-primary btn-sm" onclick="loadAll()">🔄 更新</button>
+  </div>
+  <div class="stats-grid" id="statsGrid"></div>
+  <div class="dash-table">
+    <table><thead><tr><th>選手名</th><th>期生</th><th style="text-align:center">直近4回</th><th style="text-align:center">合計</th><th>最終提出日</th></tr></thead>
+    <tbody id="dashBody"></tbody></table>
+  </div>
+</div>
+
+<!-- SETTINGS VIEW -->
+<div id="view-settings" class="view">
+  <div class="section-header"><div class="section-title">設定</div></div>
+  <div class="settings-card">
+    <div class="settings-section">
+      <div class="settings-section-title">🔥 Firebase 接続状態</div>
+      <div class="status-row"><span class="status-dot" id="fbDot"></span><span id="fbStatus" style="color:var(--gray-mid);">確認中...</span></div>
+      <button class="btn btn-sm" style="background:var(--gray);color:var(--dark);margin-top:10px;" onclick="testFirebase()">接続テスト</button>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">✅ チェック項目管理（選手別）</div>
+      <div style="font-size:0.8rem;color:var(--gray-mid);margin-bottom:10px;">選手ごとに個別のチェック項目を設定できます</div>
+      <div class="form-group">
+        <label class="form-label">対象選手を選択</label>
+        <select class="form-control" id="checkPlayerSelect" onchange="renderCheckItemList()">
+          <option value="">選手を選択してください</option>
+        </select>
+      </div>
+      <div id="checkItemList" style="display:flex;flex-direction:column;gap:7px;margin-bottom:10px;"></div>
+      <div style="display:flex;gap:7px;">
+        <input type="text" class="form-control" id="newCheckItem" placeholder="例：今日の目標を達成できた" style="flex:1;">
+        <button class="btn btn-primary btn-sm" onclick="addCheckItem()">追加</button>
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="saveCheckItems()">💾 保存する</button>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">🔑 選手PINコード</div>
+      <div style="font-size:0.8rem;color:var(--gray-mid);margin-bottom:10px;">各選手の4桁PINを設定してください</div>
+      <div class="pin-list" id="pinList"></div>
+      <button class="btn btn-primary btn-sm" onclick="savePins()">💾 PINを保存</button>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">👥 選手リスト</div>
+      <div class="player-list-settings" id="playerListSettings"></div>
+      <div style="display:flex;gap:7px;margin-top:8px;">
+        <input type="text" class="form-control" id="newName" placeholder="選手名" style="flex:2;">
+        <select class="form-control" id="newGrade" style="flex:1;">
+          <option value="5期生">5期生</option><option value="6期生">6期生</option><option value="7期生">7期生</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="addPlayer()">追加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<button class="fab" onclick="switchView('upload')">＋</button>
+
+<!-- NOTE MODAL -->
+<div class="modal-overlay" id="noteModal" onclick="closeNoteModal(event)" style="z-index:1000;">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="noteModalTitle"></div>
+      <button class="modal-close" onclick="closeNoteModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-img-wrap" id="noteImgWrap"></div>
+      <div class="modal-meta" id="noteMeta"></div>
+      <div id="noteDriveLink"></div>
+      <div id="noteText" style="font-size:0.83rem;color:#555;margin-bottom:10px;line-height:1.7;"></div>
+      <div class="comments-section">
+        <div class="comments-title">💬 スタッフコメント <span id="commentBadge" style="background:var(--green);color:#fff;border-radius:10px;padding:2px 7px;font-size:0.72rem;"></span></div>
+        <div class="comment-list" id="commentList"></div>
+        <div class="comment-form">
+          <textarea class="comment-input" id="commentInput" placeholder="コメントを入力..."></textarea>
+          <div id="commentAttachPreview" style="display:none;margin-bottom:6px;"></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+            <label style="display:inline-flex;align-items:center;gap:5px;padding:6px 10px;background:var(--white);border:2px solid var(--gray);border-radius:8px;cursor:pointer;font-size:0.76rem;font-weight:700;color:var(--green-dark);">
+              📷 写真<input type="file" accept="image/*" id="commentImgInput" style="display:none;" onchange="handleCommentImg(event)">
+            </label>
+            <button type="button" onclick="toggleVideoUrl()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 10px;background:var(--white);border:2px solid var(--gray);border-radius:8px;cursor:pointer;font-size:0.76rem;font-weight:700;color:#e67e22;font-family:var(--font);">🎥 動画URL</button>
+            <button class="btn btn-sm" style="background:rgba(0,0,0,0.06);color:var(--gray-mid);display:none;" id="clearAttach" onclick="clearAttach()">✕ 削除</button>
+          </div>
+          <div id="videoUrlRow" style="display:none;margin-bottom:8px;">
+            <input type="url" class="form-control" id="commentVideoUrl" placeholder="YouTube / Vimeo のURLを貼り付け" style="font-size:0.82rem;" oninput="previewVideoUrl(this.value)">
+            <div id="videoUrlPreview" style="margin-top:4px;"></div>
+          </div>
+          <div class="comment-row">
+            <select class="commenter-select" id="commenterSelect">
+              <option value="ダイゲン">ダイゲンコーチ</option>
+              <option value="諒">諒コーチ</option>
+              <option value="和田">和田コーチ</option>
+              <option value="小野">小野コーチ</option>
+              <option value="裕太">裕太コーチ</option>
+              <option value="大本">大本代表</option>
+              <option value="高崎">高崎アドバイザー</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="addComment()">送信</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IDP MODAL -->
+<div class="modal-overlay" id="idpModal" onclick="closeIdpModal(event)" style="z-index:2000;">
+  <div class="modal" style="max-width:760px;">
+    <div class="modal-header" style="background:linear-gradient(135deg,#0f4f26,#1a7a3c);">
+      <div>
+        <div class="modal-title" id="idpPlayerTitle" style="font-size:1.05rem;"></div>
+        <div style="font-size:0.72rem;opacity:0.75;margin-top:2px;">個別発育プログラム（IDP）</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <select id="idpYear" style="padding:5px 8px;border-radius:6px;border:none;font-size:0.76rem;background:rgba(255,255,255,0.2);color:#fff;outline:none;" onchange="loadIDPData()"></select>
+        <button class="modal-close" onclick="closeIdpModalDirect()">✕</button>
+      </div>
+    </div>
+    <div style="display:flex;background:#f0f8f2;border-bottom:2px solid var(--gray);overflow-x:auto;scrollbar-width:none;">
+      <div class="idp-tab active" onclick="switchIdpTab('basic')" data-tab="basic">📋 基本情報</div>
+      <div class="idp-tab" onclick="switchIdpTab('physical')" data-tab="physical">💪 フィジカル</div>
+      <div class="idp-tab" onclick="switchIdpTab('goals')" data-tab="goals">🎯 目標設定</div>
+      <div class="idp-tab" onclick="switchIdpTab('analysis')" data-tab="analysis">🔍 自己分析</div>
+      <div class="idp-tab" onclick="switchIdpTab('eval')" data-tab="eval">⭐ 総合評価</div>
+    </div>
+    <div style="max-height:78vh;overflow-y:auto;padding:0;">
+
+      <!-- BASIC -->
+      <div class="idp-panel active" id="idp-basic" style="padding:18px;">
+        <div class="idp-section-title">📋 基本情報</div>
+        <div class="idp-grid-2">
+          <div class="idp-field"><label>氏名</label><input type="text" id="idp_name" class="idp-input" placeholder="田中 蓮"></div>
+          <div class="idp-field"><label>生年月日</label><input type="date" id="idp_birth" class="idp-input"></div>
+          <div class="idp-field"><label>期生</label><input type="text" id="idp_grade" class="idp-input" placeholder="5期生"></div>
+          <div class="idp-field"><label>ポジション</label><input type="text" id="idp_pos" class="idp-input" placeholder="例：MF / FW"></div>
+          <div class="idp-field"><label>年度</label><input type="text" id="idp_nendo" class="idp-input"></div>
+        </div>
+        <div class="idp-section-title" style="margin-top:18px;">📏 身長・体重 月別記録</div>
+        <div style="overflow-x:auto;margin-bottom:12px;">
+          <table class="idp-table" style="min-width:700px;">
+            <thead><tr><th style="width:54px;">項目</th><th>4月</th><th>5月</th><th>6月</th><th>7月</th><th>8月</th><th>9月</th><th>10月</th><th>11月</th><th>12月</th><th>1月</th><th>2月</th><th>3月</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:700;color:var(--green-dark);">身長<br><span style="font-size:0.68rem;font-weight:400;color:var(--gray-mid);">cm</span></td>
+                <td><input type="number" class="idp-cell-input" id="hw_h_4" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_5" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_6" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_7" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_8" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_9" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_10" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_11" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_12" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_1" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_2" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_h_3" step="0.1" placeholder="－"></td>
+              </tr>
+              <tr><td style="font-weight:700;color:#e67e22;">体重<br><span style="font-size:0.68rem;font-weight:400;color:var(--gray-mid);">kg</span></td>
+                <td><input type="number" class="idp-cell-input" id="hw_w_4" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_5" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_6" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_7" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_8" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_9" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_10" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_11" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_12" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_1" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_2" step="0.1" placeholder="－"></td><td><input type="number" class="idp-cell-input" id="hw_w_3" step="0.1" placeholder="－"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="background:var(--white);border-radius:10px;padding:12px;border:2px solid var(--gray);">
+          <div style="font-size:0.8rem;font-weight:700;color:var(--green-dark);margin-bottom:6px;">📈 成長グラフ</div>
+          <canvas id="growthChart" height="120" style="width:100%;max-width:100%;"></canvas>
+          <div style="display:flex;gap:14px;justify-content:center;margin-top:6px;font-size:0.72rem;">
+            <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:3px;background:var(--green-dark);display:inline-block;border-radius:2px;"></span>身長(cm)</span>
+            <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:3px;background:#e67e22;display:inline-block;border-radius:2px;"></span>体重(kg)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHYSICAL -->
+      <div class="idp-panel" id="idp-physical" style="padding:18px;">
+        <div class="idp-section-title">💪 フィジカルテスト記録</div>
+        <div style="font-size:0.76rem;color:var(--gray-mid);margin-bottom:12px;">年間3回の測定データを記録します</div>
+        <div style="overflow-x:auto;">
+          <table class="idp-table">
+            <thead><tr><th>測定項目</th><th>第1回</th><th>第2回</th><th>第3回</th><th>単位</th></tr></thead>
+            <tbody>
+              <tr><td>40m走</td><td><input type="number" class="idp-cell-input" id="p_40m_1" step="0.01" placeholder="0.00"></td><td><input type="number" class="idp-cell-input" id="p_40m_2" step="0.01" placeholder="0.00"></td><td><input type="number" class="idp-cell-input" id="p_40m_3" step="0.01" placeholder="0.00"></td><td style="color:var(--gray-mid);font-size:0.74rem;">秒</td></tr>
+              <tr><td>クランク走</td><td><input type="number" class="idp-cell-input" id="p_crank_1" step="0.01" placeholder="0.00"></td><td><input type="number" class="idp-cell-input" id="p_crank_2" step="0.01" placeholder="0.00"></td><td><input type="number" class="idp-cell-input" id="p_crank_3" step="0.01" placeholder="0.00"></td><td style="color:var(--gray-mid);font-size:0.74rem;">秒</td></tr>
+              <tr><td>立ち幅跳び</td><td><input type="number" class="idp-cell-input" id="p_broad_1" placeholder="0"></td><td><input type="number" class="idp-cell-input" id="p_broad_2" placeholder="0"></td><td><input type="number" class="idp-cell-input" id="p_broad_3" placeholder="0"></td><td style="color:var(--gray-mid);font-size:0.74rem;">cm</td></tr>
+              <tr><td>三段跳び</td><td><input type="number" class="idp-cell-input" id="p_triple_1" step="0.01" placeholder="0.00"></td><td><input type="number" class="idp-cell-input" id="p_triple_2" step="0.01" placeholder="0.00"></td><td><input type="number" class="idp-cell-input" id="p_triple_3" step="0.01" placeholder="0.00"></td><td style="color:var(--gray-mid);font-size:0.74rem;">m</td></tr>
+              <tr><td>反復横跳び</td><td><input type="number" class="idp-cell-input" id="p_side_1" placeholder="0"></td><td><input type="number" class="idp-cell-input" id="p_side_2" placeholder="0"></td><td><input type="number" class="idp-cell-input" id="p_side_3" placeholder="0"></td><td style="color:var(--gray-mid);font-size:0.74rem;">回</td></tr>
+              <tr><td>垂直跳び</td><td><input type="number" class="idp-cell-input" id="p_vert_1" placeholder="0"></td><td><input type="number" class="idp-cell-input" id="p_vert_2" placeholder="0"></td><td><input type="number" class="idp-cell-input" id="p_vert_3" placeholder="0"></td><td style="color:var(--gray-mid);font-size:0.74rem;">cm</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GOALS -->
+      <div class="idp-panel" id="idp-goals" style="padding:18px;">
+        <div class="idp-section-title">🎯 目標設定</div>
+        <div class="idp-field" style="margin-bottom:14px;"><label>将来的な目標（夢）</label><textarea class="idp-textarea" id="goal_future" placeholder="将来なりたい選手像..."></textarea></div>
+        <div class="idp-field" style="margin-bottom:14px;"><label>短期目標（1ヶ月）</label><textarea class="idp-textarea" id="goal_short" placeholder="今月達成したい目標..."></textarea></div>
+        <div class="idp-field" style="margin-bottom:14px;"><label>中期目標（1年）</label><textarea class="idp-textarea" id="goal_mid" placeholder="今年度終わりまでに達成したい目標..."></textarea></div>
+        <div class="idp-field"><label>長期目標（3年）</label><textarea class="idp-textarea" id="goal_long" placeholder="3年後の自分はどうなっていたいか..."></textarea></div>
+      </div>
+
+      <!-- ANALYSIS -->
+      <div class="idp-panel" id="idp-analysis" style="padding:18px;">
+        <div class="idp-section-title">🔍 自己分析</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:270px;">
+            <div class="analysis-header strong">💪 ストロングポイント</div>
+            <div class="analysis-card"><div id="strong_rows"></div><button class="btn btn-sm" style="background:var(--green);color:#fff;margin-top:6px;width:100%;" onclick="addAnalysisRow('strong')">＋ 追加</button></div>
+          </div>
+          <div style="flex:1;min-width:270px;">
+            <div class="analysis-header challenge">⚡ 課題</div>
+            <div class="analysis-card"><div id="challenge_rows"></div><button class="btn btn-sm" style="background:#e67e22;color:#fff;margin-top:6px;width:100%;" onclick="addAnalysisRow('challenge')">＋ 追加</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EVAL -->
+      <div class="idp-panel" id="idp-eval" style="padding:18px;">
+        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="eval-btn active" onclick="switchEval(1,this)">第1回面談</button>
+          <button class="eval-btn" onclick="switchEval(2,this)">第2回面談</button>
+          <button class="eval-btn" onclick="switchEval(3,this)">第3回面談</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:18px;align-items:flex-start;">
+          <div style="flex:1;min-width:200px;max-width:300px;margin:0 auto;">
+            <div class="idp-section-title" style="text-align:center;margin-bottom:8px;">⭐ 6角評価</div>
+            <canvas id="radarCanvas" width="260" height="260"></canvas>
+          </div>
+          <div style="flex:1;min-width:240px;">
+            <div class="idp-section-title">スタッフ評価（各5点満点）</div>
+            <div style="font-size:0.74rem;color:var(--gray-mid);margin-bottom:8px;">⚠️ スタッフ管理画面から編集</div>
+            <div id="radarInputs"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:230px;">
+            <div class="idp-section-title">🗣️ 選手自己評価</div>
+            <textarea class="idp-textarea" id="eval_player" placeholder="この期間の振り返りを書こう..."></textarea>
+          </div>
+          <div style="flex:1;min-width:230px;">
+            <div class="idp-section-title">👨‍🏫 スタッフ総評</div>
+            <textarea class="idp-textarea" id="eval_staff" placeholder="スタッフからの総評..."></textarea>
+            <select class="commenter-select" id="eval_staff_name" style="margin-top:6px;">
+              <option value="ダイゲン">ダイゲンコーチ</option><option value="諒">諒コーチ</option><option value="和田">和田コーチ</option><option value="小野">小野コーチ</option><option value="裕太">裕太コーチ</option><option value="大本">大本代表</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:14px 18px;border-top:2px solid var(--gray);display:flex;gap:10px;justify-content:flex-end;background:#fff;position:sticky;bottom:0;">
+        <div id="idpSaveStatus" style="font-size:0.74rem;color:var(--gray-mid);align-self:center;"></div>
+        <button class="btn btn-primary" onclick="saveIDPData()">💾 保存する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+// ==================== STATE ====================
+const STAFF_PW = 'Jugario@2020';
+let db = null, storage = null, fbApp = null;
+let players = [];
+let notebooks = [];
+let playerPins = {};
+let playerPhotos = JSON.parse(localStorage.getItem('j_photos') || '{}');
+let idpCache = {};
+let currentUser = null;
+let currentPlayer = null;
+let currentNote = null;
+let currentIdpPlayer = null;
+let currentIdpYear = null;
+let currentEvalSession = 1;
+let pinBuffer = '';
+let loginTarget = '';
+let commentImgData = null;
+
+const RADAR_LABELS = ['技術的\nOF','技術的\nDF','戦術的\nOF','戦術的\nDF','フィジカル','メンタル\n社会性'];
+const RADAR_KEYS = ['tech_off','tech_def','tac_off','tac_def','physical','mental'];
+const RADAR_COLORS = ['#1a7a3c','#2a9d54','#3cbf6a','#f5c518','#e67e22','#e74c3c'];
+
+// ==================== FIREBASE CONFIG (固定) ====================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCw3CVRZY0g6-Z4astMNE63P3Fee5R1v0g",
+  authDomain: "jugario-kawasaki.firebaseapp.com",
+  projectId: "jugario-kawasaki",
+  storageBucket: "jugario-kawasaki.firebasestorage.app",
+  messagingSenderId: "1091921543700",
+  appId: "1:1091921543700:web:4ee8ec64bf389835441d01"
+};
+
+function initFirebase() {
+  try {
+    if (fbApp) return true;
+    fbApp = initializeApp(FIREBASE_CONFIG);
+    db = getFirestore(fbApp);
+    storage = getStorage(fbApp);
+    return true;
+  } catch(e) { console.error(e); return false; }
+}
+
+window.saveFirebaseConfig = function() {
+  showToast('Firebase設定は自動接続です ✅');
+}
+
+window.testFirebase = async function() {
+  if (!initFirebase()) { showStatus('err', '設定が不完全です'); return; }
+  try {
+    await getDocs(collection(db, 'settings'));
+    showStatus('ok', '接続成功！✅');
+    showToast('Firebase接続成功！✅');
+  } catch(e) { showStatus('err', '接続失敗: ' + e.message); showToast('接続失敗 ❌', true); }
+}
+
+function showStatus(type, msg) {
+  const dot = document.getElementById('fbDot');
+  const txt = document.getElementById('fbStatus');
+  dot.className = 'status-dot ' + (type === 'ok' ? 'ok' : 'err');
+  txt.textContent = msg;
+}
+
+// ==================== INIT ====================
+async function init() {
+  document.getElementById('upDate').value = new Date().toISOString().split('T')[0];
+
+  const drop = document.getElementById('imageDrop');
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('dragover'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+  // Firebase自動接続
+  const ok = initFirebase();
+  if (ok) {
+    showStatus('ok', '自動接続済み ✅');
+    await loadAll();
+  } else {
+    setDefaultPlayers();
+    showStatus('err', '接続失敗');
+    document.getElementById('setupBanner').classList.remove('hidden');
+  }
+
+  renderLoginScreen();
+}
+
+// ==================== DATA LOADING ====================
+async function loadAll() {
+  if (!db) { setDefaultPlayers(); renderPlayers(); return; }
+  await Promise.all([loadPlayers(), loadPins(), loadNotebooks(), loadCheckItems()]);
+  renderPlayers();
+  renderAll();
+  renderDashboard();
+}
+
+async function loadPlayers() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'players'));
+    if (snap.exists() && snap.data().list) {
+      players = snap.data().list;
+    } else { setDefaultPlayers(); }
+  } catch(e) { setDefaultPlayers(); }
+  populatePlayerSelect();
+  renderPlayerListSettings();
+  renderPinList();
+  renderLoginScreen();
+}
+
+function setDefaultPlayers() {
+  players = [
+    {name:"田中 蓮",grade:"5期生"},{name:"佐藤 陸",grade:"5期生"},
+    {name:"鈴木 颯",grade:"5期生"},{name:"高橋 大翔",grade:"5期生"},
+    {name:"山田 悠",grade:"6期生"},{name:"中村 壮",grade:"6期生"},
+    {name:"小林 海斗",grade:"6期生"},{name:"加藤 優斗",grade:"6期生"},
+    {name:"伊藤 琉",grade:"7期生"},{name:"渡辺 空",grade:"7期生"},
+    {name:"山口 誠",grade:"7期生"},{name:"松本 陽",grade:"7期生"},
+  ];
+  populatePlayerSelect();
+  renderPlayerListSettings();
+  renderPinList();
+}
+
+async function loadPins() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'pins'));
+    if (snap.exists()) playerPins = snap.data();
+  } catch(e) {}
+}
+
+async function loadNotebooks() {
+  if (!db) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'notebooks'), orderBy('date','desc')));
+    notebooks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { notebooks = []; }
+  renderAll();
+  renderDashboard();
+  if (currentPlayer) renderDetail();
+}
+
+// ==================== LOGIN ====================
+function renderLoginScreen() {
+  const grid = document.getElementById('loginGrid');
+  grid.innerHTML = players.map(p => {
+    const photo = playerPhotos[p.name] || '';
+    return `<div class="login-player-btn" onclick="selectPlayer('${p.name}')">
+      <div class="login-avatar-sm">${photo ? `<img src="${photo}">` : p.name.charAt(0)}</div>
+      <div class="login-pname">${p.name}</div>
+    </div>`;
+  }).join('');
+}
+window.renderLoginScreen = renderLoginScreen;
+
+window.selectPlayer = function(name) {
+  loginTarget = name;
+  pinBuffer = '';
+  document.getElementById('loginSelName').textContent = name + ' さん';
+  document.getElementById('pinErr').textContent = '';
+  document.getElementById('ls1').style.display = 'none';
+  document.getElementById('ls2').style.display = 'block';
+  document.getElementById('ls3').style.display = 'none';
+  updatePinDots();
+}
+
+window.showStaffLogin = function() {
+  document.getElementById('ls1').style.display = 'none';
+  document.getElementById('ls2').style.display = 'none';
+  document.getElementById('ls3').style.display = 'block';
+  document.getElementById('staffPw').value = '';
+  document.getElementById('staffErr').textContent = '';
+  setTimeout(() => document.getElementById('staffPw').focus(), 50);
+}
+
+window.backToSelect = function() {
+  pinBuffer = '';
+  document.getElementById('ls1').style.display = 'block';
+  document.getElementById('ls2').style.display = 'none';
+  document.getElementById('ls3').style.display = 'none';
+}
+
+window.pinKey = function(key) {
+  if (key === 'C') { pinBuffer = ''; }
+  else if (key === 'D') { pinBuffer = pinBuffer.slice(0,-1); }
+  else if (pinBuffer.length < 4) { pinBuffer += key; }
+  updatePinDots();
+  document.getElementById('pinErr').textContent = '';
+  if (pinBuffer.length === 4) setTimeout(checkPin, 200);
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) document.getElementById('pd'+i).classList.toggle('filled', i < pinBuffer.length);
+}
+
+function checkPin() {
+  const stored = playerPins[loginTarget];
+  if (!stored) { document.getElementById('pinErr').textContent = 'PINが設定されていません。スタッフに確認してください。'; pinBuffer = ''; updatePinDots(); return; }
+  if (pinBuffer === String(stored)) { loginAs({type:'player', name:loginTarget}); }
+  else { document.getElementById('pinErr').textContent = 'PINが違います。もう一度入力してください。'; pinBuffer = ''; updatePinDots(); }
+}
+
+window.doStaffLogin = function() {
+  const pw = document.getElementById('staffPw').value;
+  if (pw === STAFF_PW) { loginAs({type:'staff', name:'スタッフ'}); }
+  else { document.getElementById('staffErr').textContent = 'パスワードが違います'; document.getElementById('staffPw').value = ''; }
+}
+
+function loginAs(user) {
+  currentUser = user;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('headerUser').textContent = user.type === 'staff' ? '👨‍🏫 スタッフ' : `⚽ ${user.name}`;
+  document.querySelectorAll('.staff-only').forEach(el => el.style.display = user.type === 'staff' ? '' : 'none');
+  if (user.type === 'player') {
+    showPlayerDetail(user.name);
+    switchViewSilent('players');
+  } else {
+    switchViewSilent('players');
+    renderPlayers();
+  }
+}
+
+window.logout = function() {
+  currentUser = null;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('ls1').style.display = 'block';
+  document.getElementById('ls2').style.display = 'none';
+  document.getElementById('ls3').style.display = 'none';
+  renderLoginScreen();
+  showPlayerList();
+}
+
+// ==================== VIEWS ====================
+window.switchView = function(name) {
+  if (currentUser?.type === 'player' && !['players','upload'].includes(name)) return;
+  switchViewSilent(name);
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'settings') { renderPlayerListSettings(); renderPinList(); }
+  if (name === 'players') showPlayerList();
+}
+
+function switchViewSilent(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  const idx = {players:0,all:1,upload:2,dashboard:3,settings:4};
+  const tabs = document.querySelectorAll('.nav-tab');
+  if (tabs[idx[name]]) tabs[idx[name]].classList.add('active');
+}
+
+// ==================== PLAYERS VIEW ====================
+window.renderPlayers = function() {
+  const grade = document.getElementById('fGrade').value;
+  const search = document.getElementById('fSearch').value;
+  const filtered = players.filter(p => (!grade || p.grade === grade) && (!search || p.name.includes(search)));
+  const grid = document.getElementById('playerGrid');
+  if (!filtered.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--gray-mid);">選手が見つかりません</div>'; return; }
+  grid.innerHTML = filtered.map(p => {
+    const pn = notebooks.filter(n => n.player === p.name);
+    const unread = pn.filter(n => !(n.comments||[]).length).length;
+    const photo = playerPhotos[p.name] || '';
+    return `<div class="player-card" onclick="showPlayerDetail('${p.name}')">
+      ${unread > 0 ? `<span class="unread-badge">未${unread}</span>` : ''}
+      <div class="player-avatar" onclick="event.stopPropagation()">
+        ${photo ? `<img src="${photo}">` : `<span>${p.name.charAt(0)}</span>`}
+        <div class="avatar-overlay">📷</div>
+        <input type="file" accept="image/*" onchange="uploadPhoto('${p.name}',event)">
+      </div>
+      <div class="player-name">${p.name}</div>
+      <div class="grade-tag">${p.grade}</div>
+      <div class="note-count">ノート <strong>${pn.length}</strong> 件</div>
+    </div>`;
+  }).join('');
+}
+
+window.uploadPhoto = function(name, event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const S = 200; canvas.width = S; canvas.height = S;
+      const ctx = canvas.getContext('2d');
+      const s = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width-s)/2, (img.height-s)/2, s, s, 0, 0, S, S);
+      playerPhotos[name] = canvas.toDataURL('image/jpeg', 0.8);
+      localStorage.setItem('j_photos', JSON.stringify(playerPhotos));
+      renderPlayers();
+      if (currentPlayer === name) showPlayerDetail(name);
+      renderLoginScreen();
+      showToast(`${name}の写真を登録しました ✅`);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+window.showPlayerList = function() {
+  document.getElementById('playerListScreen').style.display = '';
+  document.getElementById('playerDetailScreen').style.display = 'none';
+  currentPlayer = null;
+  renderPlayers();
+}
+
+window.showPlayerDetail = function(name) {
+  currentPlayer = name;
+  document.getElementById('playerListScreen').style.display = 'none';
+  document.getElementById('playerDetailScreen').style.display = '';
+  document.getElementById('bcName').textContent = name;
+  document.getElementById('fMonth').value = '';
+  document.getElementById('fNoteSearch').value = '';
+
+  const p = players.find(pl => pl.name === name);
+  const photo = playerPhotos[name] || '';
+  const av = document.getElementById('detailAvatar');
+  av.innerHTML = `${photo ? `<img src="${photo}">` : `<span>${name.charAt(0)}</span>`}<div class="avatar-overlay">📷</div><input type="file" accept="image/*" onchange="uploadPhoto('${name}',event)">`;
+
+  document.getElementById('detailName').innerHTML = `${name} <span style="font-size:0.8rem;font-weight:500;color:var(--gray-mid);">${p?.grade||''}</span>`;
+  renderDetail();
+}
+
+window.renderDetail = function() {
+  const pn = notebooks.filter(n => n.player === currentPlayer);
+  const last = pn.length ? pn.sort((a,b)=>b.date.localeCompare(a.date))[0].date : '－';
+  document.getElementById('detailStats').innerHTML = `
+    <div class="detail-stat">提出数 <strong>${pn.length}</strong></div>
+    <div class="detail-stat">コメント済 <strong>${pn.filter(n=>(n.comments||[]).length).length}</strong></div>
+    <div class="detail-stat">最終提出 <strong>${last}</strong></div>`;
+
+  const month = document.getElementById('fMonth').value;
+  const search = document.getElementById('fNoteSearch').value;
+  const filtered = pn.filter(n => (!month || n.date.startsWith(month)) && (!search || (n.note||'').includes(search))).sort((a,b)=>b.date.localeCompare(a.date));
+
+  const tl = document.getElementById('playerTimeline');
+  if (!filtered.length) { tl.innerHTML = '<div class="empty-state"><div class="empty-icon">📓</div><div>ノートがありません</div></div>'; return; }
+  tl.innerHTML = filtered.map(n => {
+    const parts = n.date.split('/');
+    return `<div class="timeline-item" onclick="openNote('${n.id}')">
+      <div class="tl-date"><div class="tl-month">${parts[1]||''}月</div><div class="tl-day">${parts[2]||''}</div><div class="tl-year">${parts[0]||''}</div></div>
+      <div class="tl-content">
+        <div class="tl-thumb">${n.imageUrl ? `<img src="${n.imageUrl}" onerror="this.style.display='none'">` : '📓'}</div>
+        <div class="tl-info">
+          <div class="tl-title">${n.date} のノート${n.height ? ` · 身長 ${n.height}cm` : ''}</div>
+          ${n.note ? `<div class="tl-excerpt">${n.note}</div>` : ''}
+          <div class="tl-foot">
+            <span style="font-size:0.72rem;color:var(--green);font-weight:700;">💬 ${(n.comments||[]).length}件</span>
+            <span style="font-size:0.72rem;color:var(--gray-mid);">📤 ${n.uploader}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.goUpload = function() {
+  if (currentPlayer) document.getElementById('upPlayer').value = currentPlayer;
+  switchView('upload');
+}
+
+// ==================== ALL VIEW ====================
+window.renderAll = function() {
+  const grade = document.getElementById('fGradeA').value;
+  const month = document.getElementById('fMonthA').value;
+  const search = document.getElementById('fSearchA').value;
+  const filtered = notebooks.filter(n =>
+    (!grade || n.grade === grade) &&
+    (!month || n.date.startsWith(month)) &&
+    (!search || n.player.includes(search) || (n.note||'').includes(search))
+  ).sort((a,b)=>b.date.localeCompare(a.date));
+
+  const grid = document.getElementById('allGrid');
+  if (!filtered.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:44px;color:var(--gray-mid);">ノートがありません</div>'; return; }
+  grid.innerHTML = filtered.map(n => `
+    <div class="notebook-card" onclick="openNote('${n.id}')">
+      <div class="card-img">${n.imageUrl ? `<img src="${n.imageUrl}" onerror="this.style.display='none'">` : '📓'}</div>
+      <div class="card-body">
+        <div class="card-meta"><span class="player-badge">${n.player}</span><span class="grade-badge">${n.grade}</span></div>
+        <div class="card-date">📅 ${n.date}</div>
+        ${n.note ? `<div class="card-excerpt">${n.note}</div>` : ''}
+      </div>
+      <div class="card-footer"><span>📤 ${n.uploader}</span><span style="color:var(--green);font-weight:700;">💬 ${(n.comments||[]).length}</span></div>
+    </div>`).join('');
+}
+
+// ==================== NOTE MODAL ====================
+window.openNote = function(id) {
+  currentNote = notebooks.find(n => n.id === id);
+  if (!currentNote) return;
+  document.getElementById('noteModalTitle').textContent = `${currentNote.player}・${currentNote.date}`;
+  const iw = document.getElementById('noteImgWrap');
+  iw.innerHTML = currentNote.imageUrl ? `<img src="${currentNote.imageUrl}" alt="ノート">` : '📓';
+  document.getElementById('noteMeta').innerHTML = `
+    <span class="player-badge">${currentNote.player}</span>
+    <span class="grade-badge">${currentNote.grade}</span>
+    <span class="grade-badge">📅 ${currentNote.date}</span>
+    ${currentNote.height ? `<span class="grade-badge">📏 ${currentNote.height}cm</span>` : ''}
+    <span class="grade-badge">📤 ${currentNote.uploader}</span>`;
+  document.getElementById('noteDriveLink').innerHTML = '';
+  document.getElementById('noteText').textContent = currentNote.note || '';
+  if (currentNote.checkedItems?.length) {
+    document.getElementById('noteDriveLink').innerHTML = `<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;">${currentNote.checkedItems.map(item=>`<span style="background:#e8f5e9;color:var(--green-dark);font-size:0.76rem;font-weight:700;padding:3px 10px;border-radius:12px;">✅ ${item}</span>`).join('')}</div>`;
+  }
+  renderComments();
+  if (currentUser?.type === 'staff') document.getElementById('commenterSelect').value = 'ダイゲン';
+  document.getElementById('noteModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderComments() {
+  if (!currentNote) return;
+  const comments = currentNote.comments || [];
+  document.getElementById('commentBadge').textContent = comments.length;
+  document.getElementById('commentList').innerHTML = !comments.length
+    ? '<div style="font-size:0.8rem;color:var(--gray-mid);padding:6px 0;">まだコメントはありません</div>'
+    : comments.map((c, ci) => `<div class="comment-item">
+        <div class="comment-author"><span>👤 ${c.author}コーチ</span><span class="comment-date">${c.date}</span></div>
+        ${c.text ? `<div class="comment-text">${c.text}</div>` : ''}
+        ${c.imageData ? `<div style="margin-top:6px;"><img src="${c.imageData}" style="max-width:100%;max-height:200px;border-radius:8px;cursor:pointer;" onclick="openFullImg('${c.imageData}')"></div>` : ''}
+        ${c.videoUrl ? `<div style="margin-top:6px;">${getVideoEmbed(c.videoUrl)}</div>` : ''}
+        ${c.checkedItems?.length ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${c.checkedItems.map(item=>`<span style="background:#e8f5e9;color:var(--green-dark);font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:12px;">✅ ${item}</span>`).join('')}</div>` : ''}
+        ${(c.replies||[]).length ? `<div class="comment-replies">${c.replies.map(r=>`
+          <div class="comment-reply">
+            <div class="reply-author"><span>↩ ${r.author}</span><span class="comment-date">${r.date}</span></div>
+            <div class="reply-text">${r.text}</div>
+          </div>`).join('')}</div>` : ''}
+        <div style="margin-top:6px;display:flex;align-items:center;gap:10px;">
+          <button class="reply-btn-link" onclick="toggleLike('${currentNote.id}',${ci})" style="color:${(c.likes||[]).includes(currentUser?.name)?'#e74c3c':'var(--gray-mid)'};">
+            ${(c.likes||[]).includes(currentUser?.name)?'❤️':'🤍'} ${(c.likes||[]).length||0}
+          </button>
+          <button class="reply-btn-link" onclick="toggleReplyForm(${ci})">↩ 返信する</button>
+        </div>
+        <div class="reply-form" id="replyForm_${ci}">
+          <textarea class="reply-input" placeholder="返信を入力..."></textarea>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <select class="commenter-select" style="font-size:0.76rem;padding:5px 8px;">
+              <option value="ダイゲン">ダイゲンコーチ</option>
+              <option value="諒">諒コーチ</option>
+              <option value="和田">和田コーチ</option>
+              <option value="小野">小野コーチ</option>
+              <option value="裕太">裕太コーチ</option>
+              <option value="${currentUser?.name||''}">自分</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="submitReply(${ci})">送信</button>
+          </div>
+        </div>
+      </div>`).join('');
+}
+
+window.openFullImg = function(src) {
+  const o = document.createElement('div');
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:16px;';
+  o.innerHTML = `<img src="${src}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;">`;
+  o.onclick = () => document.body.removeChild(o);
+  document.body.appendChild(o);
+}
+
+window.addComment = async function() {
+  const text = document.getElementById('commentInput').value.trim();
+  const author = document.getElementById('commenterSelect').value;
+  const videoUrl = document.getElementById('commentVideoUrl').value.trim();
+  if (!text && !commentImgData && !videoUrl) { showToast('⚠️ コメントを入力してください', true); return; }
+  if (!currentNote) return;
+
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
+  const newComment = { author, text, date: dateStr, imageData: commentImgData || null, videoUrl: videoUrl || null };
+
+  if (!currentNote.comments) currentNote.comments = [];
+  currentNote.comments.push(newComment);
+
+  if (db) {
+    try {
+      await updateDoc(doc(db, 'notebooks', currentNote.id), { comments: currentNote.comments });
+    } catch(e) { console.error(e); }
+  }
+
+  document.getElementById('commentInput').value = '';
+  clearAttach();
+  renderComments();
+  renderAll(); renderDashboard();
+  if (currentPlayer) renderDetail();
+  showToast('コメントを送信しました ✅');
+}
+
+window.handleCommentImg = function(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 900; let w = img.width, h = img.height;
+      if (w > MAX) { h = h*MAX/w; w = MAX; }
+      if (h > MAX) { w = w*MAX/h; h = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      commentImgData = canvas.toDataURL('image/jpeg', 0.75);
+      document.getElementById('commentAttachPreview').style.display = 'block';
+      document.getElementById('commentAttachPreview').innerHTML = `<img src="${commentImgData}" style="max-height:100px;max-width:100%;border-radius:8px;object-fit:contain;border:2px solid var(--green);">`;
+      document.getElementById('clearAttach').style.display = 'inline-flex';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+window.toggleVideoUrl = function() {
+  const row = document.getElementById('videoUrlRow');
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+window.previewVideoUrl = function(url) {
+  const preview = document.getElementById('videoUrlPreview');
+  if (url.includes('youtu') || url.includes('vimeo')) {
+    preview.innerHTML = `<div style="font-size:0.76rem;color:#e67e22;font-weight:700;">🎥 動画URLを確認しました</div>`;
+  } else { preview.innerHTML = ''; }
+}
+
+function getVideoEmbed(url) {
+  const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  if (yt) return `<iframe style="width:100%;max-width:480px;height:200px;border-radius:8px;border:none;" src="https://www.youtube.com/embed/${yt[1]}" allowfullscreen loading="lazy"></iframe>`;
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  if (vm) return `<iframe style="width:100%;max-width:480px;height:200px;border-radius:8px;border:none;" src="https://player.vimeo.com/video/${vm[1]}" allowfullscreen loading="lazy"></iframe>`;
+  return `<a href="${url}" target="_blank" style="color:#e67e22;font-size:0.82rem;font-weight:700;">🎥 動画を開く →</a>`;
+}
+
+window.clearAttach = function() {
+  commentImgData = null;
+  document.getElementById('commentAttachPreview').style.display = 'none';
+  document.getElementById('commentAttachPreview').innerHTML = '';
+  document.getElementById('clearAttach').style.display = 'none';
+  document.getElementById('commentImgInput').value = '';
+  document.getElementById('commentVideoUrl').value = '';
+  document.getElementById('videoUrlPreview').innerHTML = '';
+  document.getElementById('videoUrlRow').style.display = 'none';
+}
+
+window.closeNoteModal = function(e) { if (e.target === document.getElementById('noteModal')) closeNoteModalDirect(); }
+window.closeNoteModalDirect = function() { document.getElementById('noteModal').classList.remove('open'); document.body.style.overflow = ''; }
+
+// ==================== UPLOAD ====================
+let selectedImg = null;
+
+window.handleImg = function(e) { if (e.target.files[0]) handleFile(e.target.files[0]); }
+
+function handleFile(file) {
+  if (!file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 1200; let w = img.width, h = img.height;
+      if (w > MAX) { h = h*MAX/w; w = MAX; }
+      if (h > MAX) { w = w*MAX/h; h = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      selectedImg = canvas.toDataURL('image/jpeg', 0.75);
+      document.getElementById('previewImg').src = selectedImg;
+      document.getElementById('imgPreview').classList.add('show');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+window.submitNote = async function() {
+  const player = document.getElementById('upPlayer').value;
+  const date = document.getElementById('upDate').value;
+  const note = document.getElementById('upNote').value;
+  const height = document.getElementById('upHeight').value;
+  const checkedItems = getCheckedItems();
+  const uploader = currentUser?.type === 'staff' ? (currentUser.name || 'スタッフ') : (currentUser?.name || '');
+
+  if (!player) { showToast('⚠️ 選手を選択してください', true); return; }
+  if (!date) { showToast('⚠️ 日付を選択してください', true); return; }
+
+  const grade = players.find(p => p.name === player)?.grade || '';
+  const dateFormatted = date.replace(/-/g, '/');
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '⏳ アップロード中...';
+
+  let imageUrl = '';
+  if (selectedImg && storage) {
+    try {
+      document.getElementById('upProg').classList.add('show');
+      document.getElementById('progFill').style.width = '50%';
+      document.getElementById('progText').textContent = '写真をアップロード中...';
+      const imgRef = ref(storage, `notebooks/${player}_${Date.now()}.jpg`);
+      await uploadString(imgRef, selectedImg, 'data_url');
+      imageUrl = await getDownloadURL(imgRef);
+      document.getElementById('progFill').style.width = '100%';
+      document.getElementById('progText').textContent = '完了！';
+      setTimeout(() => document.getElementById('upProg').classList.remove('show'), 1500);
+    } catch(e) { console.error(e); }
+  }
+
+  const noteData = { player, grade, date: dateFormatted, height, note, checkedItems, imageUrl, uploader, comments: [], createdAt: new Date().toISOString() };
+
+  if (db) {
+    try {
+      const docRef = await addDoc(collection(db, 'notebooks'), noteData);
+      notebooks.unshift({ id: docRef.id, ...noteData });
+    } catch(e) { notebooks.unshift({ id: Date.now().toString(), ...noteData }); }
+  } else {
+    notebooks.unshift({ id: Date.now().toString(), ...noteData });
+  }
+
+  showToast(`${player}（${dateFormatted}）をアップロードしました ✅`);
+  document.getElementById('upPlayer').value = '';
+  document.getElementById('upNote').value = '';
+  document.getElementById('upHeight').value = '';
+  resetChecklist();
+  document.getElementById('previewImg').src = '';
+  document.getElementById('imgPreview').classList.remove('show');
+  document.getElementById('imageInput').value = '';
+  document.getElementById('upDate').value = new Date().toISOString().split('T')[0];
+  selectedImg = null;
+  btn.disabled = false; btn.textContent = '✅ アップロードする';
+  renderAll(); renderDashboard();
+  if (currentPlayer === player) renderDetail();
+  switchView('players');
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  const total = notebooks.length;
+  const pSet = new Set(notebooks.map(n => n.player)).size;
+  const commented = notebooks.filter(n => (n.comments||[]).length).length;
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">総提出数</div></div>
+    <div class="stat-card" style="border-bottom-color:var(--accent)"><div class="stat-num">${pSet}</div><div class="stat-label">提出済み選手数</div></div>
+    <div class="stat-card" style="border-bottom-color:#3498db"><div class="stat-num">${commented}</div><div class="stat-label">コメント済み</div></div>
+    <div class="stat-card" style="border-bottom-color:#e74c3c"><div class="stat-num">${players.length - pSet}</div><div class="stat-label">未提出選手数</div></div>`;
+  document.getElementById('dashBody').innerHTML = players.map(p => {
+    const pn = notebooks.filter(n => n.player === p.name).sort((a,b)=>b.date.localeCompare(a.date));
+    const dots = [0,1,2,3].map(i => `<span class="submit-dot ${pn[i]?'done':'missing'}"></span>`).join(' ');
+    return `<tr onclick="showPlayerDetailFromDash('${p.name}')">
+      <td><strong>${p.name}</strong></td>
+      <td><span class="grade-badge">${p.grade}</span></td>
+      <td style="text-align:center">${dots}</td>
+      <td style="text-align:center;font-weight:700;color:var(--green-dark)">${pn.length}</td>
+      <td style="font-size:0.78rem;color:var(--gray-mid)">${pn[0]?.date||'－'}</td>
+    </tr>`;
+  }).join('');
+}
+
+window.showPlayerDetailFromDash = function(name) { switchView('players'); showPlayerDetail(name); }
+
+// ==================== SETTINGS ====================
+function populatePlayerSelect() {
+  const sel = document.getElementById('upPlayer');
+  sel.innerHTML = '<option value="">選択してください</option>';
+  players.forEach(p => { const o = document.createElement('option'); o.value = p.name; o.textContent = `${p.name}（${p.grade}）`; sel.appendChild(o); });
+  populateCheckPlayerSelect();
+}
+
+function renderPlayerListSettings() {
+  const el = document.getElementById('playerListSettings');
+  if (!el) return;
+  el.innerHTML = players.map((p,i) => `
+    <div class="player-item">
+      <span class="player-item-name">${p.name}</span>
+      <span class="grade-badge">${p.grade}</span>
+      <button class="btn btn-danger btn-sm" onclick="removePlayer(${i})">削除</button>
+    </div>`).join('');
+}
+
+function renderPinList() {
+  const el = document.getElementById('pinList');
+  if (!el) return;
+  el.innerHTML = players.map(p => `
+    <div class="pin-item">
+      <span style="flex:1;font-size:0.85rem;font-weight:700;">${p.name}</span>
+      <span class="grade-badge">${p.grade}</span>
+      <input type="text" maxlength="4" inputmode="numeric" class="pin-input" placeholder="----" value="${playerPins[p.name]||''}" id="pin_${p.name.replace(/\s/g,'_')}">
+    </div>`).join('');
+}
+
+window.savePins = async function() {
+  players.forEach(p => {
+    const el = document.getElementById('pin_' + p.name.replace(/\s/g,'_'));
+    if (el) { const v = el.value; if (/^\d{4}$/.test(v)) playerPins[p.name] = v; else if (!v) delete playerPins[p.name]; }
+  });
+  if (db) {
+    try { await setDoc(doc(db, 'settings', 'pins'), playerPins); showToast('PINを保存しました ✅'); }
+    catch(e) { showToast('保存に失敗しました ❌', true); }
+  } else { showToast('PINを保存しました（ローカル）✅'); }
+}
+
+window.addPlayer = async function() {
+  const name = document.getElementById('newName').value.trim();
+  const grade = document.getElementById('newGrade').value;
+  if (!name) { showToast('⚠️ 選手名を入力してください', true); return; }
+  players.push({name, grade});
+  if (db) { try { await setDoc(doc(db, 'settings', 'players'), {list: players}); } catch(e) {} }
+  document.getElementById('newName').value = '';
+  populatePlayerSelect(); renderPlayerListSettings(); renderPinList(); renderPlayers(); renderLoginScreen();
+  showToast(`${name}を追加しました ✅`);
+}
+
+window.removePlayer = async function(i) {
+  if (!confirm(`${players[i].name}を削除しますか？`)) return;
+  players.splice(i, 1);
+  if (db) { try { await setDoc(doc(db, 'settings', 'players'), {list: players}); } catch(e) {} }
+  populatePlayerSelect(); renderPlayerListSettings(); renderPinList(); renderPlayers(); renderLoginScreen();
+}
+
+// ==================== IDP ====================
+window.openIDP = async function(playerName) {
+  currentIdpPlayer = playerName;
+  const p = players.find(pl => pl.name === playerName);
+  document.getElementById('idpPlayerTitle').textContent = playerName + (p ? `（${p.grade}）` : '');
+  const yearSel = document.getElementById('idpYear');
+  yearSel.innerHTML = '';
+  const yr = new Date().getFullYear();
+  for (let y = yr; y >= yr-3; y--) { const o = document.createElement('option'); o.value = y; o.textContent = y+'年度'; yearSel.appendChild(o); }
+  currentIdpYear = yr;
+  await loadIDPData();
+  document.getElementById('idpModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  switchIdpTab('basic');
+}
+
+window.loadIDPData = async function() {
+  currentIdpYear = document.getElementById('idpYear').value;
+  const key = `${currentIdpPlayer}_${currentIdpYear}`;
+  let d = idpCache[key] || {};
+  if (db && !idpCache[key]) {
+    try {
+      const snap = await getDoc(doc(db, 'idp', key));
+      if (snap.exists()) d = snap.data();
+      idpCache[key] = d;
+    } catch(e) {}
+  }
+
+  document.getElementById('idp_name').value = d.name || currentIdpPlayer;
+  document.getElementById('idp_birth').value = d.birth || '';
+  document.getElementById('idp_grade').value = d.grade || (players.find(p=>p.name===currentIdpPlayer)?.grade||'');
+  document.getElementById('idp_pos').value = d.position || '';
+  document.getElementById('idp_nendo').value = d.nendo || currentIdpYear+'年度';
+
+  const months = [4,5,6,7,8,9,10,11,12,1,2,3];
+  months.forEach(m => {
+    const h = document.getElementById(`hw_h_${m}`); if (h) h.value = (d.hw||{})[`h_${m}`]||'';
+    const w = document.getElementById(`hw_w_${m}`); if (w) w.value = (d.hw||{})[`w_${m}`]||'';
+  });
+  setTimeout(() => drawGrowthChart(d.hw||{}), 100);
+
+  ['40m','crank','broad','triple','side','vert'].forEach(f => {
+    [1,2,3].forEach(i => { const el = document.getElementById(`p_${f}_${i}`); if (el) el.value = (d.physical||{})[`${f}_${i}`]||''; });
+  });
+  ['future','short','mid','long'].forEach(k => { const el = document.getElementById('goal_'+k); if (el) el.value = (d.goals||{})[k]||''; });
+  renderAnalysisRows('strong', (d.analysis||{}).strong||[{}]);
+  renderAnalysisRows('challenge', (d.analysis||{}).challenge||[{}]);
+  loadEvalSession(currentEvalSession, d);
+}
+
+window.switchIdpTab = function(tab) {
+  document.querySelectorAll('.idp-tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.idp-panel').forEach(p => p.classList.toggle('active', p.id==='idp-'+tab));
+  if (tab === 'eval') setTimeout(() => drawRadar(currentEvalSession), 100);
+}
+
+window.switchEval = function(n, btn) {
+  document.querySelectorAll('.eval-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentEvalSession = n;
+  const key = `${currentIdpPlayer}_${currentIdpYear}`;
+  loadEvalSession(n, idpCache[key]||{});
+}
+
+function loadEvalSession(n, d) {
+  const ev = (d.evaluations||{})[n]||{};
+  document.getElementById('radarInputs').innerHTML = RADAR_KEYS.map((k,i) => {
+    const val = ev[k]||0;
+    const btns = [1,2,3,4,5].map(s => `<button class="radar-score-btn ${val>=s?'selected':''}" onclick="setRadar('${k}',${s},this.parentNode)">${s}</button>`).join('');
+    return `<div class="radar-row"><span class="radar-label" style="color:${RADAR_COLORS[i]}">${RADAR_LABELS[i].replace('\n',' ')}</span><div class="radar-score" id="rs_${k}">${btns}</div></div>`;
+  }).join('');
+  document.getElementById('eval_player').value = ev.player_comment||'';
+  document.getElementById('eval_staff').value = ev.staff_comment||'';
+  setTimeout(() => drawRadar(n), 50);
+}
+
+window.setRadar = function(key, score, container) {
+  container.querySelectorAll('.radar-score-btn').forEach((b,i) => b.classList.toggle('selected', i<score));
+  drawRadar(currentEvalSession);
+}
+
+function getRadarScores() {
+  return RADAR_KEYS.map(k => { const el = document.getElementById(`rs_${k}`); return el ? el.querySelectorAll('.radar-score-btn.selected').length : 0; });
+}
+
+function drawRadar(n) {
+  const canvas = document.getElementById('radarCanvas'); if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2, r = Math.min(W,H)/2 - 34;
+  ctx.clearRect(0, 0, W, H);
+  const scores = getRadarScores();
+  const sides = 6, step = (Math.PI*2)/sides, start = -Math.PI/2;
+
+  for (let level = 1; level <= 5; level++) {
+    ctx.beginPath();
+    for (let i = 0; i < sides; i++) { const a = start+i*step; const x = cx+(r*level/5)*Math.cos(a); const y = cy+(r*level/5)*Math.sin(a); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }
+    ctx.closePath(); ctx.strokeStyle = level===5?'#ccc':'#e8e8e2'; ctx.lineWidth = level===5?1.5:1; ctx.stroke();
+  }
+  for (let i = 0; i < sides; i++) { const a = start+i*step; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a)); ctx.strokeStyle='#ddd'; ctx.lineWidth=1; ctx.stroke(); }
+
+  ctx.beginPath();
+  scores.forEach((s,i) => { const a = start+i*step; const x = cx+r*(s/5)*Math.cos(a); const y = cy+r*(s/5)*Math.sin(a); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.closePath(); ctx.fillStyle='rgba(26,122,60,0.18)'; ctx.fill(); ctx.strokeStyle='var(--green)'; ctx.lineWidth=2.5; ctx.stroke();
+
+  scores.forEach((s,i) => {
+    const a = start+i*step; const x = cx+r*(s/5)*Math.cos(a); const y = cy+r*(s/5)*Math.sin(a);
+    ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fillStyle=RADAR_COLORS[i]; ctx.fill();
+  });
+
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for (let i = 0; i < sides; i++) {
+    const a = start+i*step; const lx = cx+(r+22)*Math.cos(a); const ly = cy+(r+22)*Math.sin(a);
+    ctx.fillStyle = RADAR_COLORS[i]; ctx.font = 'bold 9px sans-serif';
+    const lines = RADAR_LABELS[i].split('\n');
+    lines.forEach((line,li) => ctx.fillText(line, lx, ly+(li-(lines.length-1)/2)*12));
+  }
+}
+
+function drawGrowthChart(hw) {
+  const canvas = document.getElementById('growthChart'); if (!canvas) return;
+  const months = [4,5,6,7,8,9,10,11,12,1,2,3];
+  const labels = ['4','5','6','7','8','9','10','11','12','1','2','3'];
+  const heights = months.map(m => hw[`h_${m}`] ? parseFloat(hw[`h_${m}`]) : null);
+  const weights = months.map(m => hw[`w_${m}`] ? parseFloat(hw[`w_${m}`]) : null);
+  if (!heights.some(v=>v) && !weights.some(v=>v)) { canvas.style.display='none'; return; }
+  canvas.style.display = 'block';
+  const W = canvas.parentElement.offsetWidth - 28 || 480; canvas.width = W; canvas.height = 120;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,W,120);
+  const pad = {l:32,r:8,t:12,b:20};
+  const gW = W-pad.l-pad.r, gH = 120-pad.t-pad.b;
+
+  function drawLine(data, color) {
+    const vals = data.filter(v=>v!==null); if (!vals.length) return;
+    const minV = Math.min(...vals)-2, maxV = Math.max(...vals)+2;
+    ctx.beginPath(); let first = true;
+    data.forEach((v,i) => {
+      if (v===null){first=true;return;}
+      const x=pad.l+i*(gW/11), y=pad.t+gH-((v-minV)/(maxV-minV||1))*gH;
+      first?ctx.moveTo(x,y):ctx.lineTo(x,y); first=false;
+    });
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.stroke();
+    data.forEach((v,i) => {
+      if (v===null)return;
+      const x=pad.l+i*(gW/11), y=pad.t+gH-((v-minV)/(maxV-minV||1))*gH;
+      ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+      ctx.fillStyle='#333'; ctx.font='bold 8px sans-serif'; ctx.textAlign='center'; ctx.fillText(v,x,y-8);
+    });
+  }
+
+  ctx.strokeStyle='#eee'; ctx.lineWidth=1;
+  [0,0.5,1].forEach(t => { const y=pad.t+gH*t; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+gW,y); ctx.stroke(); });
+  drawLine(heights, '#0f4f26'); drawLine(weights, '#e67e22');
+  ctx.fillStyle='#999'; ctx.font='8px sans-serif'; ctx.textAlign='center';
+  labels.forEach((l,i) => ctx.fillText(l, pad.l+i*(gW/11), 120-4));
+}
+
+function renderAnalysisRows(type, rows) {
+  const container = document.getElementById(`${type}_rows`); if (!container) return;
+  if (!rows||!rows.length) rows = [{}];
+  const color = type==='strong'?'var(--green-dark)':'#e65100';
+  const ph = type==='strong'
+    ? {play:'例：ドリブル突破、シュート…',what:'得意なプレー内容',when:'どんな場面で',where:'どのエリアで',how:'具体的にどう',who:'誰との関係で'}
+    : {play:'例：1対1の守備、クロス対応…',what:'どんな課題か',when:'どんな場面で出るか',where:'どのエリアで',how:'どう克服するか',who:'誰のサポートが必要'};
+  container.innerHTML = rows.map((row,i) => `
+    <div class="analysis-row" data-idx="${i}" style="border:1.5px solid var(--gray);border-radius:8px;padding:10px;margin-bottom:8px;position:relative;">
+      <div style="font-size:0.7rem;font-weight:700;color:${color};margin-bottom:6px;">No.${i+1}</div>
+      ${i>0?`<button onclick="removeAnalysisRow('${type}',${i})" style="position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:#ccc;font-size:0.88rem;">✕</button>`:''}
+      <div class="idp-field" style="margin-bottom:8px;padding-bottom:8px;border-bottom:2px dashed var(--gray);">
+        <label style="color:${color};font-size:0.76rem;">⚽ どんなプレーについて</label>
+        <input type="text" class="idp-input analysis-input" data-key="play" value="${row.play||''}" placeholder="${ph.play}" style="font-weight:700;">
+      </div>
+      <div class="idp-field"><label>What（何を）</label><input type="text" class="idp-input analysis-input" data-key="what" value="${row.what||''}" placeholder="${ph.what}"></div>
+      <div class="idp-field"><label>When（いつ）</label><input type="text" class="idp-input analysis-input" data-key="when" value="${row.when||''}" placeholder="${ph.when}"></div>
+      <div class="idp-field"><label>Where（どこで）</label><input type="text" class="idp-input analysis-input" data-key="where" value="${row.where||''}" placeholder="${ph.where}"></div>
+      <div class="idp-field"><label>How（どのように）</label><input type="text" class="idp-input analysis-input" data-key="how" value="${row.how||''}" placeholder="${ph.how}"></div>
+      <div class="idp-field"><label>With Who（誰と）</label><input type="text" class="idp-input analysis-input" data-key="who" value="${row.who||''}" placeholder="${ph.who}"></div>
+      <div class="idp-field"><label>いつまでに</label><input type="date" class="idp-input analysis-input" data-key="deadline" value="${row.deadline||''}"></div>
+    </div>`).join('');
+}
+
+window.addAnalysisRow = function(type) {
+  const rows = collectAnalysisRows(type); rows.push({}); renderAnalysisRows(type, rows);
+}
+window.removeAnalysisRow = function(type, idx) {
+  const rows = collectAnalysisRows(type); rows.splice(idx,1); renderAnalysisRows(type, rows);
+}
+function collectAnalysisRows(type) {
+  const container = document.getElementById(`${type}_rows`); if (!container) return [{}];
+  return Array.from(container.querySelectorAll('.analysis-row')).map(row => {
+    const obj = {}; row.querySelectorAll('.analysis-input').forEach(inp => { obj[inp.dataset.key]=inp.value; }); return obj;
+  });
+}
+
+window.saveIDPData = async function() {
+  const key = `${currentIdpPlayer}_${currentIdpYear}`;
+  const d = {
+    name: document.getElementById('idp_name').value,
+    birth: document.getElementById('idp_birth').value,
+    grade: document.getElementById('idp_grade').value,
+    position: document.getElementById('idp_pos').value,
+    nendo: document.getElementById('idp_nendo').value,
+    hw: {}, physical: {}, goals: {}, analysis: {}, evaluations: (idpCache[key]?.evaluations||{}),
+  };
+  [4,5,6,7,8,9,10,11,12,1,2,3].forEach(m => {
+    const h=document.getElementById(`hw_h_${m}`); if(h) d.hw[`h_${m}`]=h.value;
+    const w=document.getElementById(`hw_w_${m}`); if(w) d.hw[`w_${m}`]=w.value;
+  });
+  ['40m','crank','broad','triple','side','vert'].forEach(f => {
+    [1,2,3].forEach(i => { const el=document.getElementById(`p_${f}_${i}`); if(el) d.physical[`${f}_${i}`]=el.value; });
+  });
+  ['future','short','mid','long'].forEach(k => { const el=document.getElementById('goal_'+k); if(el) d.goals[k]=el.value; });
+  d.analysis.strong = collectAnalysisRows('strong');
+  d.analysis.challenge = collectAnalysisRows('challenge');
+  const scores = {}; RADAR_KEYS.forEach(k => { const el=document.getElementById(`rs_${k}`); scores[k]=el?el.querySelectorAll('.radar-score-btn.selected').length:0; });
+  d.evaluations[currentEvalSession] = { ...scores, player_comment: document.getElementById('eval_player').value, staff_comment: document.getElementById('eval_staff').value, staff_name: document.getElementById('eval_staff_name').value };
+  idpCache[key] = d;
+  if (db) {
+    try { await setDoc(doc(db, 'idp', key), d); }
+    catch(e) { showToast('保存に失敗しました ❌', true); return; }
+  }
+  document.getElementById('idpSaveStatus').textContent = '✅ 保存しました（' + new Date().toLocaleTimeString('ja-JP') + '）';
+  showToast('IDPを保存しました ✅');
+}
+
+window.closeIdpModal = function(e) { if (e.target===document.getElementById('idpModal')) closeIdpModalDirect(); }
+window.closeIdpModalDirect = function() { document.getElementById('idpModal').classList.remove('open'); document.body.style.overflow=''; }
+
+// ==================== TOAST ====================
+window.showToast = function(msg, isErr=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast'+(isErr?' error':'');
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2800);
+}
+function showToast(msg, isErr=false) { window.showToast(msg, isErr); }
+
+// ==================== LIKES ====================
+window.toggleLike = async function(noteId, commentIdx) {
+  if (!currentNote || !currentUser) return;
+  const comment = currentNote.comments[commentIdx];
+  if (!comment.likes) comment.likes = [];
+  const name = currentUser.name || currentUser.type;
+  const idx = comment.likes.indexOf(name);
+  if (idx >= 0) comment.likes.splice(idx, 1);
+  else comment.likes.push(name);
+
+  if (db) {
+    try { await updateDoc(doc(db, 'notebooks', currentNote.id), { comments: currentNote.comments }); }
+    catch(e) { console.error(e); }
+  }
+  renderComments();
+}
+
+// ==================== CHECKLIST (per-player) ====================
+let playerCheckItems = {}; // { playerName: [items] }
+
+async function loadCheckItems() {
+  if (!db) return;
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'checkItems'));
+    if (snap.exists()) {
+      // Support both old format (items:[]) and new format ({playerName:[items]})
+      const data = snap.data();
+      if (data.playerItems) playerCheckItems = data.playerItems;
+      else if (data.items) {
+        // migrate old global items to all players
+        players.forEach(p => { if (!playerCheckItems[p.name]) playerCheckItems[p.name] = [...(data.items||[])]; });
+      }
+    }
+  } catch(e) {}
+  renderUploadChecklist();
+  renderCheckItemList();
+  populateCheckPlayerSelect();
+}
+
+function populateCheckPlayerSelect() {
+  const sel = document.getElementById('checkPlayerSelect');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">選手を選択してください</option>';
+  players.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.name; o.textContent = `${p.name}（${p.grade}）`;
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function getPlayerCheckItems(playerName) {
+  return playerCheckItems[playerName] || [];
+}
+
+function renderUploadChecklist() {
+  const wrap = document.getElementById('uploadChecklist');
+  if (!wrap) return;
+  const playerName = document.getElementById('upPlayer')?.value;
+  const items = playerName ? getPlayerCheckItems(playerName) : [];
+  if (!items.length) {
+    wrap.innerHTML = '<div style="font-size:0.8rem;color:var(--gray-mid);">このノートにはチェック項目がありません</div>';
+    return;
+  }
+  wrap.innerHTML = items.map((item, i) => `
+    <div class="check-item">
+      <input type="checkbox" id="chk_${i}" value="${item}">
+      <label for="chk_${i}">${item}</label>
+    </div>`).join('');
+}
+
+function getCheckedItems() {
+  const playerName = document.getElementById('upPlayer')?.value;
+  const items = playerName ? getPlayerCheckItems(playerName) : [];
+  return items.filter((_, i) => {
+    const el = document.getElementById(`chk_${i}`);
+    return el && el.checked;
+  });
+}
+
+function resetChecklist() {
+  const playerName = document.getElementById('upPlayer')?.value;
+  const items = playerName ? getPlayerCheckItems(playerName) : [];
+  items.forEach((_, i) => {
+    const el = document.getElementById(`chk_${i}`);
+    if (el) el.checked = false;
+  });
+}
+
+function renderCheckItemList() {
+  const el = document.getElementById('checkItemList');
+  if (!el) return;
+  const playerName = document.getElementById('checkPlayerSelect')?.value;
+  if (!playerName) { el.innerHTML = '<div style="font-size:0.8rem;color:var(--gray-mid);">上で選手を選んでください</div>'; return; }
+  const items = getPlayerCheckItems(playerName);
+  el.innerHTML = items.map((item, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--white);border-radius:8px;">
+      <span style="flex:1;font-size:0.85rem;">${item}</span>
+      <button class="btn btn-danger btn-sm" onclick="removeCheckItem(${i})">削除</button>
+    </div>`).join('') || '<div style="font-size:0.8rem;color:var(--gray-mid);">項目がありません。追加してください。</div>';
+}
+
+window.addCheckItem = function() {
+  const val = document.getElementById('newCheckItem').value.trim();
+  const playerName = document.getElementById('checkPlayerSelect')?.value;
+  if (!playerName) { showToast('⚠️ 選手を選択してください', true); return; }
+  if (!val) { showToast('⚠️ 項目を入力してください', true); return; }
+  if (!playerCheckItems[playerName]) playerCheckItems[playerName] = [];
+  playerCheckItems[playerName].push(val);
+  document.getElementById('newCheckItem').value = '';
+  renderCheckItemList();
+}
+
+window.removeCheckItem = function(i) {
+  const playerName = document.getElementById('checkPlayerSelect')?.value;
+  if (!playerName) return;
+  if (!playerCheckItems[playerName]) return;
+  playerCheckItems[playerName].splice(i, 1);
+  renderCheckItemList();
+}
+
+window.saveCheckItems = async function() {
+  if (db) {
+    try {
+      await setDoc(doc(db, 'settings', 'checkItems'), { playerItems: playerCheckItems });
+      showToast('チェック項目を保存しました ✅');
+    } catch(e) { showToast('保存に失敗しました ❌', true); }
+  } else { showToast('チェック項目を保存しました ✅'); }
+}
+
+// ==================== THREAD REPLIES ====================
+window.toggleReplyForm = function(commentIdx) {
+  const form = document.getElementById(`replyForm_${commentIdx}`);
+  if (!form) return;
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) {
+    const input = form.querySelector('.reply-input');
+    if (input) input.focus();
+  }
+}
+
+window.submitReply = async function(commentIdx) {
+  const form = document.getElementById(`replyForm_${commentIdx}`);
+  const input = form?.querySelector('.reply-input');
+  const authorSel = form?.querySelector('.reply-author-select');
+  if (!input || !input.value.trim()) return;
+
+  const text = input.value.trim();
+  const author = authorSel ? authorSel.value : (currentUser?.name || 'スタッフ');
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
+
+  if (!currentNote.comments[commentIdx].replies) currentNote.comments[commentIdx].replies = [];
+  currentNote.comments[commentIdx].replies.push({ author, text, date: dateStr });
+
+  if (db) {
+    try { await updateDoc(doc(db, 'notebooks', currentNote.id), { comments: currentNote.comments }); }
+    catch(e) { console.error(e); }
+  }
+
+  input.value = '';
+  form.classList.remove('open');
+  renderComments();
+  showToast('返信を送信しました ✅');
+}
+
+// ==================== START ====================
+init();
+</script>
+</body>
+</html>

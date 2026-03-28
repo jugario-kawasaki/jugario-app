@@ -393,7 +393,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-accent btn-sm" onclick="goUpload()">📷 アップロード</button>
-        <button class="btn btn-primary btn-sm" onclick="openIDP(currentPlayer)">📋 IDP</button>
+        <button class="btn btn-primary btn-sm" id="idpBtn" onclick="openIDP(currentPlayer)">📋 IDP</button>
       </div>
     </div>
     <div class="filter-bar">
@@ -1036,6 +1036,11 @@ window.showPlayerDetail = function(name) {
   av.innerHTML = `${photo ? `<img src="${photo}">` : `<span>${name.charAt(0)}</span>`}<div class="avatar-overlay">📷</div><input type="file" accept="image/*" onchange="uploadPhoto('${name}',event)">`;
 
   document.getElementById('detailName').innerHTML = `${name} <span style="font-size:0.8rem;font-weight:500;color:var(--gray-mid);">${p?.grade||''}</span>`;
+
+  // IDPボタンに選手名を直接渡す
+  const idpBtn = document.getElementById('idpBtn');
+  if (idpBtn) idpBtn.setAttribute('onclick', `openIDP('${name}')`);
+
   renderDetail();
 }
 

@@ -955,6 +955,11 @@ window.switchView = function(name) {
   if (name === 'dashboard') renderDashboard();
   if (name === 'settings') { renderPlayerListSettings(); renderPinList(); }
   if (name === 'players') showPlayerList();
+  // 選手がアップロード画面を開いたとき自動で名前をセット
+  if (name === 'upload' && currentUser?.type === 'player') {
+    document.getElementById('upPlayer').value = currentUser.name;
+    renderUploadChecklist();
+  }
 }
 
 function switchViewSilent(name) {
@@ -1314,13 +1319,20 @@ window.submitNote = async function() {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = '⏳ アップロード中...';
 
-  let imageUrl = '';
+  // 同じ選手・同じ日付のノートが既にあるか確認
+  const existing = notebooks.find(n => n.player === player && n.date === dateFormatted);
+  if (existing) {
+    const ok = confirm(`${player}（${dateFormatted}）のノートは既に存在します。\n上書きしますか？`);
+    if (!ok) { btn.disabled = false; btn.textContent = '✅ アップロードする'; return; }
+  }
+
+  let imageUrl = existing?.imageUrl || '';
   if (selectedImg && storage) {
     try {
       document.getElementById('upProg').classList.add('show');
       document.getElementById('progFill').style.width = '50%';
       document.getElementById('progText').textContent = '写真をアップロード中...';
-      const imgRef = storage.ref(`notebooks/${player}_${Date.now()}.jpg`);
+      const imgRef = storage.ref(`notebooks/${player}_${dateFormatted.replace(/\//g,'-')}.jpg`);
       await imgRef.putString(selectedImg, 'data_url');
       imageUrl = await imgRef.getDownloadURL();
       document.getElementById('progFill').style.width = '100%';
@@ -1329,18 +1341,41 @@ window.submitNote = async function() {
     } catch(e) { console.error(e); }
   }
 
-  const noteData = { player, grade, date: dateFormatted, height, note, checkedItems, imageUrl, uploader, comments: [], createdAt: new Date().toISOString() };
+  // コメントは既存のものを引き継ぐ
+  const comments = existing?.comments || [];
+  const noteData = { player, grade, date: dateFormatted, height, note, checkedItems, imageUrl, uploader, comments, updatedAt: new Date().toISOString() };
 
   if (db) {
     try {
-      const docRef = await db.collection('notebooks').add(noteData);
-      notebooks.unshift({ id: docRef.id, ...noteData });
-    } catch(e) { notebooks.unshift({ id: Date.now().toString(), ...noteData }); }
+      if (existing) {
+        // 上書き
+        await db.collection('notebooks').doc(existing.id).set(noteData);
+        const idx = notebooks.findIndex(n => n.id === existing.id);
+        if (idx >= 0) notebooks[idx] = { id: existing.id, ...noteData };
+        showToast(`${player}（${dateFormatted}）を上書きしました ✅`);
+      } else {
+        // 新規
+        noteData.createdAt = new Date().toISOString();
+        const docRef = await db.collection('notebooks').add(noteData);
+        notebooks.unshift({ id: docRef.id, ...noteData });
+        showToast(`${player}（${dateFormatted}）をアップロードしました ✅`);
+      }
+    } catch(e) {
+      console.error(e);
+      showToast('保存に失敗しました ❌', true);
+    }
   } else {
-    notebooks.unshift({ id: Date.now().toString(), ...noteData });
+    if (existing) {
+      const idx = notebooks.findIndex(n => n.id === existing.id);
+      if (idx >= 0) notebooks[idx] = { id: existing.id, ...noteData };
+      showToast(`${player}（${dateFormatted}）を上書きしました ✅`);
+    } else {
+      noteData.createdAt = new Date().toISOString();
+      notebooks.unshift({ id: Date.now().toString(), ...noteData });
+      showToast(`${player}（${dateFormatted}）をアップロードしました ✅`);
+    }
   }
 
-  showToast(`${player}（${dateFormatted}）をアップロードしました ✅`);
   document.getElementById('upPlayer').value = '';
   document.getElementById('upNote').value = '';
   document.getElementById('upHeight').value = '';

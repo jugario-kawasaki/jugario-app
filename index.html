@@ -165,6 +165,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
 .submit-dot{width:10px;height:10px;border-radius:50%;background:var(--gray);display:inline-block;margin:0 2px;}
 .submit-dot.done{background:var(--green-light);}
 .submit-dot.missing{background:#e74c3c;}
+.submit-dot.absent{background:#f5c518;}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;padding:16px;overflow-y:auto;backdrop-filter:blur(4px);}
@@ -375,6 +376,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
         <option value="5期生">5期生</option>
         <option value="6期生">6期生</option>
         <option value="7期生">7期生</option>
+        <option value="スタッフ">スタッフ</option>
       </select>
       <input class="filter-input" type="text" id="fSearch" placeholder="🔍 選手名で検索..." oninput="renderPlayers()">
     </div>
@@ -416,6 +418,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
       <option value="5期生">5期生</option>
       <option value="6期生">6期生</option>
       <option value="7期生">7期生</option>
+      <option value="スタッフ">スタッフ</option>
     </select>
     <input class="filter-input" type="month" id="fMonthA" onchange="renderAll()">
     <input class="filter-input" type="text" id="fSearchA" placeholder="🔍 選手名・メモで検索..." oninput="renderAll()" style="flex:1;min-width:120px;">
@@ -434,6 +437,13 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
     <div class="form-group">
       <label class="form-label">日付</label>
       <input type="date" class="form-control" id="upDate">
+    </div>
+    <div class="form-group staff-only" id="statusField" style="display:none;">
+      <label class="form-label">ステータス</label>
+      <select class="form-control" id="upStatus" onchange="toggleUploadFields()">
+        <option value="present">✅ 参加</option>
+        <option value="absent">🔴 休（メンバー外）</option>
+      </select>
     </div>
     <div class="form-group">
       <label class="form-label">身長（cm）</label>
@@ -514,7 +524,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
       <div style="display:flex;gap:7px;margin-top:8px;">
         <input type="text" class="form-control" id="newName" placeholder="選手名" style="flex:2;">
         <select class="form-control" id="newGrade" style="flex:1;">
-          <option value="5期生">5期生</option><option value="6期生">6期生</option><option value="7期生">7期生</option>
+          <option value="5期生">5期生</option><option value="6期生">6期生</option><option value="7期生">7期生</option><option value="スタッフ">スタッフ</option>
         </select>
         <button class="btn btn-primary btn-sm" onclick="addPlayer()">追加</button>
       </div>
@@ -929,6 +939,9 @@ function loginAs(user) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('headerUser').textContent = user.type === 'staff' ? '👨‍🏫 スタッフ' : `⚽ ${user.name}`;
   document.querySelectorAll('.staff-only').forEach(el => el.style.display = user.type === 'staff' ? '' : 'none');
+  // ステータス欄はスタッフのみ表示
+  const statusField = document.getElementById('statusField');
+  if (statusField) statusField.style.display = user.type === 'staff' ? '' : 'none';
   if (user.type === 'player') {
     showPlayerDetail(user.name);
     switchViewSilent('players');
@@ -1079,7 +1092,7 @@ window.renderDetail = function() {
       <div class="tl-content">
         <div class="tl-thumb">${n.imageUrl ? `<img src="${n.imageUrl}" onerror="this.style.display='none'">` : '📓'}</div>
         <div class="tl-info">
-          <div class="tl-title">${n.date} のノート${n.height ? ` · 身長 ${n.height}cm` : ''}</div>
+          <div class="tl-title">${n.status === 'absent' ? '🔴 休（メンバー外）' : `${n.date} のノート${n.height ? ` · 身長 ${n.height}cm` : ''}`}</div>
           ${n.note ? `<div class="tl-excerpt">${n.note}</div>` : ''}
           <div class="tl-foot">
             <span style="font-size:0.72rem;color:var(--green);font-weight:700;">💬 ${(n.comments||[]).length}件</span>
@@ -1089,6 +1102,12 @@ window.renderDetail = function() {
       </div>
     </div>`;
   }).join('');
+}
+
+window.toggleUploadFields = function() {
+  const status = document.getElementById('upStatus')?.value || 'present';
+  const fields = document.getElementById('presentFields');
+  if (fields) fields.style.display = status === 'absent' ? 'none' : 'block';
 }
 
 window.goUpload = function() {
@@ -1306,9 +1325,10 @@ function handleFile(file) {
 window.submitNote = async function() {
   const player = document.getElementById('upPlayer').value;
   const date = document.getElementById('upDate').value;
-  const note = document.getElementById('upNote').value;
-  const height = document.getElementById('upHeight').value;
-  const checkedItems = getCheckedItems();
+  const status = document.getElementById('upStatus')?.value || 'present';
+  const note = status === 'absent' ? '' : document.getElementById('upNote').value;
+  const height = status === 'absent' ? '' : document.getElementById('upHeight').value;
+  const checkedItems = status === 'absent' ? [] : getCheckedItems();
   const uploader = currentUser?.type === 'staff' ? (currentUser.name || 'スタッフ') : (currentUser?.name || '');
 
   if (!player) { showToast('⚠️ 選手を選択してください', true); return; }
@@ -1317,17 +1337,16 @@ window.submitNote = async function() {
   const grade = players.find(p => p.name === player)?.grade || '';
   const dateFormatted = date.replace(/-/g, '/');
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true; btn.textContent = '⏳ アップロード中...';
+  btn.disabled = true; btn.textContent = '⏳ 送信中...';
 
-  // 同じ選手・同じ日付のノートが既にあるか確認
   const existing = notebooks.find(n => n.player === player && n.date === dateFormatted);
   if (existing) {
     const ok = confirm(`${player}（${dateFormatted}）のノートは既に存在します。\n上書きしますか？`);
-    if (!ok) { btn.disabled = false; btn.textContent = '✅ アップロードする'; return; }
+    if (!ok) { btn.disabled = false; btn.textContent = '✅ 送信する'; return; }
   }
 
   let imageUrl = existing?.imageUrl || '';
-  if (selectedImg && storage) {
+  if (status !== 'absent' && selectedImg && storage) {
     try {
       document.getElementById('upProg').classList.add('show');
       document.getElementById('progFill').style.width = '50%';
@@ -1341,29 +1360,23 @@ window.submitNote = async function() {
     } catch(e) { console.error(e); }
   }
 
-  // コメントは既存のものを引き継ぐ
   const comments = existing?.comments || [];
-  const noteData = { player, grade, date: dateFormatted, height, note, checkedItems, imageUrl, uploader, comments, updatedAt: new Date().toISOString() };
+  const noteData = { player, grade, date: dateFormatted, height, note, checkedItems, imageUrl, uploader, status, comments, updatedAt: new Date().toISOString() };
 
   if (db) {
     try {
       if (existing) {
-        // 上書き
         await db.collection('notebooks').doc(existing.id).set(noteData);
         const idx = notebooks.findIndex(n => n.id === existing.id);
         if (idx >= 0) notebooks[idx] = { id: existing.id, ...noteData };
         showToast(`${player}（${dateFormatted}）を上書きしました ✅`);
       } else {
-        // 新規
         noteData.createdAt = new Date().toISOString();
         const docRef = await db.collection('notebooks').add(noteData);
         notebooks.unshift({ id: docRef.id, ...noteData });
-        showToast(`${player}（${dateFormatted}）をアップロードしました ✅`);
+        showToast(status === 'absent' ? `🔴 ${player}（${dateFormatted}）休を記録しました` : `${player}（${dateFormatted}）をアップロードしました ✅`);
       }
-    } catch(e) {
-      console.error(e);
-      showToast('保存に失敗しました ❌', true);
-    }
+    } catch(e) { console.error(e); showToast('保存に失敗しました ❌', true); }
   } else {
     if (existing) {
       const idx = notebooks.findIndex(n => n.id === existing.id);
@@ -1372,20 +1385,22 @@ window.submitNote = async function() {
     } else {
       noteData.createdAt = new Date().toISOString();
       notebooks.unshift({ id: Date.now().toString(), ...noteData });
-      showToast(`${player}（${dateFormatted}）をアップロードしました ✅`);
+      showToast(status === 'absent' ? `🔴 ${player}（${dateFormatted}）休を記録しました` : `${player}（${dateFormatted}）をアップロードしました ✅`);
     }
   }
 
   document.getElementById('upPlayer').value = '';
   document.getElementById('upNote').value = '';
   document.getElementById('upHeight').value = '';
+  if (document.getElementById('upStatus')) document.getElementById('upStatus').value = 'present';
+  if (document.getElementById('presentFields')) document.getElementById('presentFields').style.display = 'block';
   resetChecklist();
   document.getElementById('previewImg').src = '';
   document.getElementById('imgPreview').classList.remove('show');
   document.getElementById('imageInput').value = '';
   document.getElementById('upDate').value = new Date().toISOString().split('T')[0];
   selectedImg = null;
-  btn.disabled = false; btn.textContent = '✅ アップロードする';
+  btn.disabled = false; btn.textContent = '✅ 送信する';
   renderAll(); renderDashboard();
   if (currentPlayer === player) renderDetail();
   switchView('players');
@@ -1403,7 +1418,11 @@ function renderDashboard() {
     <div class="stat-card" style="border-bottom-color:#e74c3c"><div class="stat-num">${players.length - pSet}</div><div class="stat-label">未提出選手数</div></div>`;
   document.getElementById('dashBody').innerHTML = players.map(p => {
     const pn = notebooks.filter(n => n.player === p.name).sort((a,b)=>b.date.localeCompare(a.date));
-    const dots = [0,1,2,3].map(i => `<span class="submit-dot ${pn[i]?'done':'missing'}"></span>`).join(' ');
+    const dots = [0,1,2,3].map(i => {
+      const n = pn[i];
+      const cls = !n ? 'missing' : n.status === 'absent' ? 'absent' : 'done';
+      return `<span class="submit-dot ${cls}" title="${!n?'未提出':n.status==='absent'?'休':'提出済'}"></span>`;
+    }).join(' ');
     return `<tr onclick="showPlayerDetailFromDash('${p.name}')">
       <td><strong>${p.name}</strong></td>
       <td><span class="grade-badge">${p.grade}</span></td>

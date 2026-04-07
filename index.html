@@ -727,11 +727,14 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script>
 // ==================== STATE ====================
 const STAFF_PW = 'Jugario@2020';
-let db = null, storage = null, fbApp = null;
+let db = null, fbApp = null;
+
+// Cloudinary設定
+const CLOUDINARY_CLOUD = 'du0syrlg5';
+const CLOUDINARY_PRESET = 'jugario';
 let players = [];
 let notebooks = [];
 let playerPins = {};
@@ -766,7 +769,6 @@ function initFirebase() {
     if (fbApp) return true;
     fbApp = firebase.initializeApp(FIREBASE_CONFIG);
     db = firebase.firestore();
-    storage = firebase.storage();
     return true;
   } catch(e) { console.error(e); return false; }
 }
@@ -1346,18 +1348,38 @@ window.submitNote = async function() {
   }
 
   let imageUrl = existing?.imageUrl || '';
-  if (status !== 'absent' && selectedImg && storage) {
+  if (status !== 'absent' && selectedImg) {
     try {
       document.getElementById('upProg').classList.add('show');
-      document.getElementById('progFill').style.width = '50%';
+      document.getElementById('progFill').style.width = '30%';
       document.getElementById('progText').textContent = '写真をアップロード中...';
-      const imgRef = storage.ref(`notebooks/${player}_${dateFormatted.replace(/\//g,'-')}.jpg`);
-      await imgRef.putString(selectedImg, 'data_url');
-      imageUrl = await imgRef.getDownloadURL();
-      document.getElementById('progFill').style.width = '100%';
-      document.getElementById('progText').textContent = '完了！';
-      setTimeout(() => document.getElementById('upProg').classList.remove('show'), 1500);
-    } catch(e) { console.error(e); }
+
+      // Base64をBlobに変換
+      const res = await fetch(selectedImg);
+      const blob = await res.blob();
+      const formData = new FormData();
+      formData.append('file', blob);
+      formData.append('upload_preset', CLOUDINARY_PRESET);
+      formData.append('folder', 'jugario-notebooks');
+
+      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const uploadData = await uploadRes.json();
+      if (uploadData.secure_url) {
+        imageUrl = uploadData.secure_url;
+        document.getElementById('progFill').style.width = '100%';
+        document.getElementById('progText').textContent = '完了！';
+        setTimeout(() => document.getElementById('upProg').classList.remove('show'), 1500);
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch(e) {
+      console.error(e);
+      showToast('写真のアップロードに失敗しました ❌', true);
+      document.getElementById('upProg').classList.remove('show');
+    }
   }
 
   const comments = existing?.comments || [];

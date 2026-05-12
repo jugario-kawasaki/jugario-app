@@ -435,7 +435,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 14px 100px;}
       <select class="form-control" id="upPlayer" onchange="renderUploadChecklist()"></select>
     </div>
     <div class="form-group">
-      <label class="form-label">日付</label>
+      <label class="form-label">活動日（トレーニングをした日）</label>
       <input type="date" class="form-control" id="upDate">
     </div>
     <div class="form-group staff-only" id="statusField" style="display:none;">
@@ -754,6 +754,17 @@ const RADAR_LABELS = ['技術的\nOF','技術的\nDF','戦術的\nOF','戦術的
 const RADAR_KEYS = ['tech_off','tech_def','tac_off','tac_def','physical','mental'];
 const RADAR_COLORS = ['#1a7a3c','#2a9d54','#3cbf6a','#f5c518','#e67e22','#e74c3c'];
 
+
+function formatDateTime(isoStr) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  const h = String(d.getHours()).padStart(2,'0');
+  const m = String(d.getMinutes()).padStart(2,'0');
+  return y+'/'+mo+'/'+day+' '+h+':'+m;
+}
 // ==================== FIREBASE CONFIG (固定) ====================
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCw3CVRZY0g6-Z4astMNE63P3Fee5R1v0g",
@@ -1094,11 +1105,12 @@ window.renderDetail = function() {
       <div class="tl-content">
         <div class="tl-thumb">${n.imageUrl ? `<img src="${n.imageUrl}" onerror="this.style.display='none'">` : '📓'}</div>
         <div class="tl-info">
-          <div class="tl-title">${n.status === 'absent' ? '🔴 休（メンバー外）' : `${n.date} のノート${n.height ? ` · 身長 ${n.height}cm` : ''}`}</div>
+          <div class="tl-title">${n.status === 'absent' ? '🔴 休（メンバー外）' : `⚽ ${n.date} のノート${n.height ? ` · 身長 ${n.height}cm` : ''}`}</div>
           ${n.note ? `<div class="tl-excerpt">${n.note}</div>` : ''}
           <div class="tl-foot">
             <span style="font-size:0.72rem;color:var(--green);font-weight:700;">💬 ${(n.comments||[]).length}件</span>
             <span style="font-size:0.72rem;color:var(--gray-mid);">📤 ${n.uploader}</span>
+            ${n.createdAt ? `<span style="font-size:0.72rem;color:var(--gray-mid);">🕐 ${formatDateTime(n.createdAt)}</span>` : ''}
           </div>
         </div>
       </div>
@@ -1152,9 +1164,11 @@ window.openNote = function(id) {
   document.getElementById('noteMeta').innerHTML = `
     <span class="player-badge">${currentNote.player}</span>
     <span class="grade-badge">${currentNote.grade}</span>
-    <span class="grade-badge">📅 ${currentNote.date}</span>
+    <span class="grade-badge">⚽ 活動日 ${currentNote.date}</span>
     ${currentNote.height ? `<span class="grade-badge">📏 ${currentNote.height}cm</span>` : ''}
-    <span class="grade-badge">📤 ${currentNote.uploader}</span>`;
+    <span class="grade-badge">📤 ${currentNote.uploader}</span>
+    ${currentNote.createdAt ? `<span class="grade-badge">🕐 提出 ${formatDateTime(currentNote.createdAt)}</span>` : ''}
+    ${currentNote.updatedAt && currentNote.updatedAt !== currentNote.createdAt ? `<span class="grade-badge">✏️ 更新 ${formatDateTime(currentNote.updatedAt)}</span>` : ''}`;
   document.getElementById('noteDriveLink').innerHTML = '';
   document.getElementById('noteText').textContent = currentNote.note || '';
   if (currentNote.checkedItems?.length) {
